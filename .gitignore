@@ -1,0 +1,23 @@
+# Python
+backend/.venv/
+backend/*.db
+backend/kanban.db
+backend/vapid_private.pem
+backend/vapid_public.txt
+backend/firebase-service-account.json
+__pycache__/
+*.pyc
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Capacitor build outputs (keep ios/ and android/ source-controlled)
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/ios/App/Pods/
+frontend/ios/App/App.xcworkspace/xcuserdata/
+frontend/ios/DerivedData/

@@ -1,0 +1,33 @@
+[project]
+name = "kanban-app"
+version = "0.1.0"
+description = "Kanban Memo App backend"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.7.0",
+    "apscheduler>=3.10.4",
+    "pywebpush>=2.0.0",
+    "cryptography>=42.0.0",
+    "python-dotenv>=1.0.0",
+    "python-multipart>=0.0.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[dependency-groups]
+dev = []
+
+[project.optional-dependencies]
+# Install with: uv sync --extra firebase
+# Required to send push notifications to native Android/iOS apps.
+# Also needs FIREBASE_SERVICE_ACCOUNT_PATH env var pointing to a
+# Firebase service-account JSON downloaded from the Firebase console.
+firebase = ["firebase-admin>=6.5.0"]
