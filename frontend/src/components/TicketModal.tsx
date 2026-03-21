@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, RefreshCw, Eye, Edit2 } from 'lucide-react'
+import { X, Plus, RefreshCw } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import type { Ticket, TicketStatus, FrequencyType, PriorityLevel, EstimationSize } from '@/types'
 import { STATUSES, WEEKDAYS, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
@@ -18,38 +18,33 @@ const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
   { id: 'interval', label: 'Interval' },
 ]
 
-const DESCRIPTION_TEMPLATE = `## Why\n\n\n## What\n\n\n## How\n\n`
+interface HowItem { id: string; text: string; done: boolean }
 
-/** Minimal markdown → React renderer for preview */
-function MarkdownPreview({ content }: { content: string }) {
-  const lines  = content.split('\n')
-  const nodes: React.ReactNode[] = []
-
-  lines.forEach((line, i) => {
-    if (line.startsWith('## '))
-      nodes.push(<h2 key={i} className="text-sm font-semibold text-amber-400 mt-3 mb-0.5">{line.slice(3)}</h2>)
-    else if (line.startsWith('# '))
-      nodes.push(<h1 key={i} className="text-base font-bold text-slate-100 mt-3 mb-1">{line.slice(2)}</h1>)
-    else if (line.startsWith('### '))
-      nodes.push(<h3 key={i} className="text-sm font-semibold text-slate-300 mt-2 mb-0.5">{line.slice(4)}</h3>)
-    else if (line.trim() === '')
-      nodes.push(<div key={i} className="h-1" />)
-    else
-      nodes.push(<p key={i} className="text-sm text-slate-300 leading-relaxed">{line}</p>)
-  })
-
-  return <div className="space-y-0">{nodes}</div>
+function parseDescription(raw?: string): { why: string; what: string; how: HowItem[] } {
+  if (!raw) return { why: '', what: '', how: [] }
+  try {
+    const p = JSON.parse(raw)
+    if (p && typeof p === 'object' && 'why' in p) {
+      return { why: p.why ?? '', what: p.what ?? '', how: Array.isArray(p.how) ? p.how : [] }
+    }
+  } catch {}
+  // Legacy plain-text: put it in Why
+  return { why: raw, what: '', how: [] }
 }
 
 export default function TicketModal({ ticket, initialStatus = 'backlog', onClose }: Props) {
   const { tags, createTicket, updateTicket, createTag } = useStore()
 
+  const parsed = parseDescription(ticket?.description)
+
   const [title,          setTitle]          = useState(ticket?.title           ?? '')
-  const [description,    setDescription]    = useState(ticket?.description     ?? DESCRIPTION_TEMPLATE)
+  const [why,            setWhy]            = useState(parsed.why)
+  const [what,           setWhat]           = useState(parsed.what)
+  const [howItems,       setHowItems]       = useState<HowItem[]>(parsed.how)
+  const [howInput,       setHowInput]       = useState('')
   const [status,         setStatus]         = useState<TicketStatus>(ticket?.status ?? initialStatus)
   const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
   const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
-  const [previewMd,      setPreviewMd]      = useState(false)
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
   const [newTagColor,    setNewTagColor]    = useState('#ec4899')
@@ -75,6 +70,20 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
     setFrequencyDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])
   }
 
+  function addHowItem() {
+    if (!howInput.trim()) return
+    setHowItems(prev => [...prev, { id: crypto.randomUUID(), text: howInput.trim(), done: false }])
+    setHowInput('')
+  }
+
+  function toggleHowItem(id: string) {
+    setHowItems(prev => prev.map(item => item.id === id ? { ...item, done: !item.done } : item))
+  }
+
+  function removeHowItem(id: string) {
+    setHowItems(prev => prev.filter(item => item.id !== id))
+  }
+
   function handleAddTag() {
     if (!newTagName.trim()) return
     const tag = createTag({ name: newTagName.trim(), color: newTagColor })
@@ -98,9 +107,12 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
           frequency_interval: null  as null,
         }
 
+    const descPayload = { why: why.trim(), what: what.trim(), how: howItems }
+    const hasDesc = descPayload.why || descPayload.what || descPayload.how.length > 0
+
     const payload = {
       title:       title.trim(),
-      description: description.trim() || undefined,
+      description: hasDesc ? JSON.stringify(descPayload) : undefined,
       status,
       priority,
       estimation,
@@ -187,31 +199,69 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             </div>
           </div>
 
-          {/* Description with markdown preview */}
+          {/* Why */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-slate-400">Description</label>
-              <button
-                onClick={() => setPreviewMd(v => !v)}
-                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-amber-400 transition-colors"
-              >
-                {previewMd ? <Edit2 size={11} /> : <Eye size={11} />}
-                {previewMd ? 'Edit' : 'Preview'}
+            <label className="text-xs font-medium text-slate-400 mb-1 block">Why</label>
+            <textarea
+              className="textarea"
+              rows={2}
+              placeholder="Why does this ticket exist?"
+              value={why}
+              onChange={e => setWhy(e.target.value)}
+            />
+          </div>
+
+          {/* What */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">What</label>
+            <textarea
+              className="textarea"
+              rows={2}
+              placeholder="What needs to be done?"
+              value={what}
+              onChange={e => setWhat(e.target.value)}
+            />
+          </div>
+
+          {/* How */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1.5 block">How</label>
+            {howItems.length > 0 && (
+              <div className="space-y-1.5 mb-2">
+                {howItems.map(item => (
+                  <div key={item.id} className="flex items-center gap-2 group">
+                    <button
+                      onClick={() => toggleHowItem(item.id)}
+                      className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+                        ${item.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
+                    >
+                      {item.done && <span className="text-white text-[9px] leading-none font-bold">✓</span>}
+                    </button>
+                    <span className={`text-sm flex-1 leading-snug ${item.done ? 'line-through text-slate-500' : 'text-slate-300'}`}>
+                      {item.text}
+                    </span>
+                    <button
+                      onClick={() => removeHowItem(item.id)}
+                      className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <input
+                className="input flex-1 h-8 text-xs"
+                placeholder="Add step…"
+                value={howInput}
+                onChange={e => setHowInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addHowItem() } }}
+              />
+              <button onClick={addHowItem} className="btn-ghost py-1 px-2 text-xs">
+                <Plus size={13} />
               </button>
             </div>
-            {previewMd ? (
-              <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 min-h-[96px]">
-                <MarkdownPreview content={description} />
-              </div>
-            ) : (
-              <textarea
-                className="textarea"
-                rows={6}
-                placeholder="Description (supports markdown)…"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-              />
-            )}
           </div>
 
           {/* Status */}
