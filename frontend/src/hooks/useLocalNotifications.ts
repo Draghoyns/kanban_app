@@ -27,9 +27,13 @@ export function useLocalNotifications() {
         if (result.display !== 'granted') return
         setEnabled(true)
         await scheduleDailyReminder()
-      } else if ('Notification' in window) {
-        const permission = await Notification.requestPermission()
-        setEnabled(permission === 'granted')
+      } else {
+        // Web: no actual push notifications on non-native platform.
+        // Optionally surface browser permission dialog, but always toggle state.
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => { /* ignore */ })
+        }
+        setEnabled(true)
       }
     } finally {
       setLoading(false)
