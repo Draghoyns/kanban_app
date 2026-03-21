@@ -8,71 +8,152 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 
 ---
 
+## How it works
+
+There are three layers:
+
+| Layer | Tech | What it does |
+|---|---|---|
+| Backend | Python (FastAPI) + SQLite | Stores all your data, runs on your Mac |
+| Frontend | React + TypeScript + Vite | The UI — runs in a browser during dev, compiled to static files for mobile |
+| Native wrapper | Capacitor | Takes the compiled website and wraps it into an Android/iOS app |
+
+The app on your phone is a WebView (a browser in disguise) loading local files. It calls your Mac's backend over Wi-Fi.
+
+---
+
 ## What you need
 
 - Your Mac and phone **on the same Wi-Fi network**
-- [Android Studio](https://developer.android.com/studio) (Android) **or** Xcode + Xcode Command Line Tools (iOS)
+- [Android Studio](https://developer.android.com/studio) (Android) **or** Xcode (iOS)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python package manager
 - [Node.js](https://nodejs.org/) (v18+)
 
 ---
 
-## Step 1 — Start the backend on your Mac
+## Step 1 — Install Android Studio and the SDK
+
+**1a. Download and install [Android Studio](https://developer.android.com/studio)**
+
+> **Java:** Android Studio ships with its own JDK — do not install a separate one. An older system Java will break the Gradle build. The `android/gradle.properties` in this repo already points Gradle to Android Studio's JDK automatically.
+
+**1b. Download the Android SDK**
+
+Android Studio is just the IDE — the SDK (the actual build tools) must be downloaded separately inside it:
+
+1. Open Android Studio — you'll land on a welcome screen
+2. Click **More Actions → SDK Manager**
+   > If a project opens instead of the welcome screen: top menu → **Android Studio → Settings → Languages & Frameworks → Android SDK**
+3. In the **SDK Platforms** tab: check **Android 14 (API 34)** (or the latest available)
+4. In the **SDK Tools** tab: make sure these are checked:
+   - Android SDK Build-Tools
+   - Android SDK Command-line Tools (latest)
+   - Android SDK Platform-Tools *(this includes `adb`, needed to talk to your phone)*
+5. Click **Apply** and wait for the download to finish
+
+**1c. Add the SDK to your shell**
+
+```bash
+cat >> ~/.zshrc << 'EOF'
+
+# Android SDK
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_HOME/platform-tools"
+EOF
+
+source ~/.zshrc
+```
+
+Open a **new terminal window** after running this, or the next steps won't find `adb`.
+
+---
+
+## Step 2 — Start the backend on your Mac
 
 ```bash
 chmod +x start.sh
 ./start.sh
 ```
 
-This installs dependencies and starts the backend at **http://localhost:8000**.  
+This installs Python/Node dependencies and starts the backend at **http://localhost:8000**.  
 Keep this terminal open whenever you want to use the app.
 
 ---
 
-## Step 2 — Find your Mac's local IP address
+## Step 3 — Find your Mac's local IP address
 
 ```bash
 ipconfig getifaddr en0
 ```
 
-You'll get something like `192.168.1.42`. Note it down.
+You'll get something like `192.168.1.42`. Note it down — this is the address your phone will use to reach the backend.
 
 ---
 
-## Step 3 — Build the app
+## Step 4 — Build the app
 
 ```bash
 cd frontend
 npm install
 
-# Replace the IP below with yours from Step 2
+# Replace the IP below with yours from Step 3
 VITE_API_BASE_URL=http://192.168.1.42:8000 npm run build
+```
 
-# Sync the build into the native project
+This compiles the React app into static files in `frontend/dist/`.
+
+Then sync those files into the Android project:
+
+```bash
 npx cap sync
 ```
 
+> You'll see iOS-related warnings if Xcode isn't installed — ignore them.
+
+> **Why `VITE_API_BASE_URL`?** During dev, the browser and backend are both on `localhost` so no IP is needed. On the phone, `localhost` means the phone itself, so you have to hardcode your Mac's LAN IP at build time.
+
 ---
 
-## Step 4 — Install on your phone
+## Step 5 — Prepare your Android phone
 
-### Android
+**Enable Developer Options:**
+1. Settings → About phone → tap **Build number** 7 times
+2. You'll see "You are now a developer!"
 
-Connect your phone via USB (enable USB Debugging in Developer Options), then:
+**Enable USB Debugging:**
+- Settings → Developer options → turn on **USB debugging**
+
+**Enable Install via USB** *(required on Xiaomi/MIUI and some other brands)*:
+- Settings → Developer options → turn on **Install via USB**
+
+Connect your phone to your Mac via USB.
+
+> A popup will appear on your phone asking to allow USB debugging from this computer — tap **Allow**.
+
+Verify your phone is visible:
+
+```bash
+adb devices
+```
+
+You should see your device listed as `device`. If it shows `unauthorized`, check your phone for the USB debugging approval popup and tap Allow.
+
+---
+
+## Step 6 — Install on your phone
 
 ```bash
 cd frontend
 npx cap run android
 ```
 
-The app installs and opens on your phone automatically.
+This compiles the native APK and installs it on your phone. The app opens automatically.
 
-> **No USB?** Open Android Studio with `npx cap open android`, then do  
-> **Build → Generate Signed APK**, transfer the `.apk` to your phone and install it.
+> If the command fails with `ERR_SDK_NOT_FOUND`, your terminal doesn't have `ANDROID_HOME` set — open a new terminal window and try again (the shell setup in Step 1c only takes effect in new windows).
 
 ---
 
-### iOS
+## iOS
 
 ```bash
 # One-time setup
@@ -95,7 +176,7 @@ In Xcode:
 - Open the app on your phone — it connects automatically over Wi-Fi
 - Everything is stored locally in `backend/kanban.db` (SQLite)
 
-> If the app can't connect, double-check that your phone and Mac are on the same Wi-Fi and that the IP in Step 3 is correct.
+> If the app can't connect, double-check that your phone and Mac are on the same Wi-Fi and that the IP in Step 4 is correct.
 
 ---
 
