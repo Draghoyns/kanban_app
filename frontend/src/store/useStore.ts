@@ -30,12 +30,18 @@ function isDue(t: Ticket, today: Date): boolean {
 }
 
 interface AppStore {
-  tickets:   Ticket[]
-  memos:     Memo[]
-  tags:      Tag[]
-  activeTab: 'kanban' | 'memo'
+  tickets:     Ticket[]
+  memos:       Memo[]
+  tags:        Tag[]
+  activeTab:   'kanban' | 'memo'
+  hideDone:    boolean
+  theme:       'dark' | 'light'
+  sidebarOpen: boolean
 
-  setActiveTab: (tab: 'kanban' | 'memo') => void
+  setActiveTab:   (tab: 'kanban' | 'memo') => void
+  setHideDone:    (v: boolean) => void
+  setTheme:       (theme: 'dark' | 'light') => void
+  setSidebarOpen: (v: boolean) => void
 
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
@@ -54,12 +60,18 @@ interface AppStore {
 export const useStore = create<AppStore>()(
   persist(
     (set, get) => ({
-      tickets:   [],
-      memos:     [],
-      tags:      [],
-      activeTab: 'kanban',
+      tickets:     [],
+      memos:       [],
+      tags:        [],
+      activeTab:   'kanban',
+      hideDone:    false,
+      theme:       'dark',
+      sidebarOpen: false,
 
-      setActiveTab: (tab) => set({ activeTab: tab }),
+      setActiveTab:   (tab)   => set({ activeTab:   tab }),
+      setHideDone:    (v)     => set({ hideDone:    v }),
+      setTheme:       (theme) => set({ theme }),
+      setSidebarOpen: (v)     => set({ sidebarOpen: v }),
 
       // ── Tickets ──────────────────────────────────────────────────────────
 
@@ -70,6 +82,7 @@ export const useStore = create<AppStore>()(
           title:              data.title,
           description:        data.description        ?? null,
           status:             data.status             ?? 'backlog',
+          priority:           data.priority           ?? null,
           position:           get().tickets.filter(t => t.status === (data.status ?? 'backlog')).length,
           is_routine:         data.is_routine         ?? false,
           frequency_type:     data.frequency_type     ?? null,
@@ -97,6 +110,7 @@ export const useStore = create<AppStore>()(
               ...(data.title              != null    ? { title: data.title }                           : {}),
               ...(data.description        != null    ? { description: data.description }               : {}),
               ...(data.status             != null    ? { status: data.status }                         : {}),
+              ...(data.priority           !== undefined ? { priority: data.priority }                  : {}),
               ...(data.position           != null    ? { position: data.position }                     : {}),
               ...(data.is_routine         != null    ? { is_routine: data.is_routine }                 : {}),
               ...(data.frequency_type     !== undefined ? { frequency_type: data.frequency_type }         : {}),
@@ -139,6 +153,7 @@ export const useStore = create<AppStore>()(
           title:              t.title,
           description:        t.description,
           status:             'backlog',
+          priority:           t.priority ?? null,
           position:           tickets.filter(x => x.status === 'backlog').length + i,
           is_routine:         false,
           frequency_type:     null,
