@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
+import { useLiveUpdate } from '@/hooks/useLiveUpdate'
 import TagBadge from '@/components/TagBadge'
 
 const PALETTE_PRESETS = [
@@ -48,8 +49,9 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
+  const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
   const [newEpicName,  setNewEpicName]  = useState('')
   const [newEpicColor, setNewEpicColor] = useState('#ec4899')
@@ -90,6 +92,63 @@ export default function Sidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
+
+          {/* ── Sync ─────────────────────────────────────────────────── */}
+          <Section
+            icon={<RefreshCw size={15} style={{ color: 'var(--accent)' }} />}
+            title="Sync"
+            open={open.sync ?? false}
+            onToggle={() => toggle('sync')}
+          >
+            <p className="text-xs text-slate-400 leading-relaxed mb-3">
+              Update the app over WiFi from your Mac. Make sure the Mac's backend
+              is running and both devices are on the same network.
+            </p>
+
+            {/* Server URL input */}
+            <label className="text-xs text-slate-500 block mb-1">Backend URL</label>
+            <input
+              className="input w-full h-8 text-xs mb-3 font-mono"
+              value={backendUrl}
+              onChange={e => { setBackendUrl(e.target.value); resetSync() }}
+              placeholder="http://192.168.1.x:8000"
+            />
+
+            {/* Sync button */}
+            <button
+              onClick={() => sync(backendUrl)}
+              disabled={syncStatus === 'checking' || syncStatus === 'downloading' || syncStatus === 'updated'}
+              className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50"
+              style={{ borderColor: 'color-mix(in srgb, var(--accent) 60%, black)', color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)' }}
+            >
+              <RefreshCw
+                size={13}
+                className={syncStatus === 'checking' || syncStatus === 'downloading' ? 'animate-spin' : ''}
+              />
+              {syncStatus === 'idle'        && 'Sync now'}
+              {syncStatus === 'checking'    && 'Checking…'}
+              {syncStatus === 'downloading' && 'Downloading…'}
+              {syncStatus === 'up-to-date'  && 'Up to date'}
+              {syncStatus === 'updated'     && 'Reloading…'}
+              {syncStatus === 'error'       && 'Retry sync'}
+            </button>
+
+            {/* Status message */}
+            {syncMessage && (
+              <div className={`flex items-start gap-1.5 mt-2 text-xs leading-relaxed ${
+                syncStatus === 'error'      ? 'text-rose-400'  :
+                syncStatus === 'up-to-date' ? 'text-slate-400' : 'text-emerald-400'
+              }`}>
+                {syncStatus === 'error'
+                  ? <AlertCircle size={12} className="shrink-0 mt-px" />
+                  : syncStatus === 'up-to-date' || syncStatus === 'updated'
+                  ? <CheckCircle size={12} className="shrink-0 mt-px" />
+                  : null
+                }
+                {syncMessage}
+              </div>
+            )}
+          </Section>
 
           {/* ── How to use ───────────────────────────────────────────── */}
           <Section

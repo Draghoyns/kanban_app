@@ -41,6 +41,7 @@ interface AppStore {
   notificationMinute:   number
   notificationsEnabled: boolean
   sidebarOpen:          boolean
+  backendUrl:           string
 
   setActiveTab:           (tab: 'kanban' | 'memo') => void
   setHideDone:            (v: boolean) => void
@@ -50,6 +51,7 @@ interface AppStore {
   setNotificationMinute:  (minute: number) => void
   setNotificationsEnabled:(v: boolean) => void
   setSidebarOpen:         (v: boolean) => void
+  setBackendUrl:          (url: string) => void
 
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
@@ -79,6 +81,7 @@ export const useStore = create<AppStore>()(
       notificationMinute:   0,
       notificationsEnabled: false,
       sidebarOpen:          false,
+      backendUrl:           'http://localhost:8000',
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
       setHideDone:             (v)     => set({ hideDone:             v }),
@@ -88,6 +91,7 @@ export const useStore = create<AppStore>()(
       setNotificationMinute:   (m)     => set({ notificationMinute:   m }),
       setNotificationsEnabled: (v)     => set({ notificationsEnabled: v }),
       setSidebarOpen:          (v)     => set({ sidebarOpen:          v }),
+      setBackendUrl:           (url)   => set({ backendUrl:           url }),
 
       // ── Tickets ──────────────────────────────────────────────────────────
 
