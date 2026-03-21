@@ -170,11 +170,10 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                 <button
                   key={e.id}
                   onClick={() => setEstimation(estimation === e.id ? null : e.id)}
-                  title={e.hours}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors
                     ${estimation === e.id ? e.badge : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
                 >
-                  {e.label} <span className="font-normal opacity-60">{e.hours}</span>
+                  {e.label}
                 </button>
               ))}
               {estimation && (

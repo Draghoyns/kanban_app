@@ -1,7 +1,7 @@
 export type TicketStatus   = 'backlog' | 'in_progress' | 'blocked' | 'today' | 'done'
 export type FrequencyType  = 'daily' | 'weekly' | 'interval' | 'weekdays'
 export type PriorityLevel  = 'P1' | 'P2' | 'P3' | 'P4'
-export type EstimationSize = 'XS' | 'S' | 'M' | 'L' | 'XL'
+export type EstimationSize = '1' | '2' | '3' | '5' | '8'
 
 export interface Tag {
   id:    number
@@ -122,14 +122,13 @@ export const PRIORITY_LEVELS: {
 export const ESTIMATION_SIZES: {
   id:    EstimationSize
   label: string
-  hours: string
   badge: string
 }[] = [
-  { id: 'XS', label: 'XS', hours: '~1h',  badge: 'bg-slate-800 text-slate-300 border border-slate-600'    },
-  { id: 'S',  label: 'S',  hours: '~2h',  badge: 'bg-blue-950 text-blue-300 border border-blue-800'       },
-  { id: 'M',  label: 'M',  hours: '~4h',  badge: 'bg-violet-950 text-violet-300 border border-violet-800' },
-  { id: 'L',  label: 'L',  hours: '~8h',  badge: 'bg-orange-950 text-orange-300 border border-orange-800' },
-  { id: 'XL', label: 'XL', hours: '16h+', badge: 'bg-rose-950 text-rose-300 border border-rose-800'       },
+  { id: '1', label: '1', badge: 'bg-slate-800 text-slate-300 border border-slate-600'    },
+  { id: '2', label: '2', badge: 'bg-blue-950 text-blue-300 border border-blue-800'       },
+  { id: '3', label: '3', badge: 'bg-violet-950 text-violet-300 border border-violet-800' },
+  { id: '5', label: '5', badge: 'bg-orange-950 text-orange-300 border border-orange-800' },
+  { id: '8', label: '8', badge: 'bg-rose-950 text-rose-300 border border-rose-800'       },
 ]
 
 export const MEMO_COLORS = [
