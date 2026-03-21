@@ -28,6 +28,7 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - Each EPIC is a coloured badge; deleting an EPIC removes it from all tickets automatically
 
 ### Sidebar
+- **Sync** — update the app over WiFi without a USB cable (see [WiFi OTA sync](#wifi-ota-sync))
 - **EPICs** — full list with create (`+`) and delete (`×`) actions
 - **Notifications** — toggle daily reminder on/off; set reminder time (HH:MM)
 - **Settings** — hide/show Done column; dark / light theme toggle (sun / moon)
@@ -203,6 +204,41 @@ In Xcode:
 ```
 
 Opens the app at `http://localhost:5173` with the Python backend at `localhost:8000`. Data is stored in `backend/kanban.db` (SQLite) and is separate from the phone's data.
+
+---
+
+## WiFi OTA sync
+
+Once the app is installed on your phone, you can push updates **wirelessly** without a USB cable.
+
+### How it works
+
+1. You make changes and run `npm run build` on your Mac (this generates a new `dist/version.json` with a unique `bundleId`).
+2. The backend (`./start.sh`) serves two new endpoints:
+   - `GET /sync/version` — returns the current build's `bundleId`
+   - `GET /sync/bundle.zip` — streams the full `dist/` directory as a zip
+3. On the phone, open the **sidebar → Sync**, enter your Mac's local IP (e.g. `http://192.168.1.x:8000`), and tap **Sync now**.
+4. The app checks the version, downloads the zip if it differs, applies it, and reloads automatically.
+5. The new bundle is stored on-device — the app keeps working fully **offline** after syncing.
+
+### Workflow
+
+```bash
+# 1. Edit code on your Mac, then build
+cd frontend
+npm run build
+
+# 2. Make sure the backend is running
+./start.sh          # from the repo root
+
+# 3. Find your Mac's local IP
+ipconfig getifaddr en0   # e.g. 192.168.1.42
+
+# 4. On the phone:
+#    Sidebar → Sync → set URL to http://192.168.1.42:8000 → tap 'Sync now'
+```
+
+> **One-time requirement:** The `@capawesome/capacitor-live-update` native plugin must be present in the installed APK. The first deploy via USB (`npx cap run android`) installs it. All subsequent updates can be done wirelessly.
 
 ---
 
