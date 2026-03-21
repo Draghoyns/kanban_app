@@ -36,7 +36,20 @@ export function useLocalNotifications() {
     }
   }
 
-  return { enabled, loading, enable }
+  async function disable() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { LocalNotifications } = await import('@capacitor/local-notifications')
+        const pending = await LocalNotifications.getPending()
+        if (pending.notifications.length > 0) {
+          await LocalNotifications.cancel({ notifications: pending.notifications })
+        }
+      } catch { /* ignore */ }
+    }
+    setEnabled(false)
+  }
+
+  return { enabled, loading, enable, disable }
 }
 
 /** Schedule (or reschedule) a single repeating 9 am daily reminder. */
@@ -62,7 +75,7 @@ export async function scheduleDailyReminder(): Promise<void> {
         title:     'Kanban Memo',
         body:      'Check your routine tasks for today',
         schedule:  { at, every: 'day', allowWhileIdle: true },
-        iconColor: '#6366f1',
+        iconColor: '#f59e0b',
       }],
     })
   } catch (err) {
