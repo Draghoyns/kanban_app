@@ -20,7 +20,7 @@ const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
 
 interface HowItem { id: string; text: string; done: boolean }
 
-function parseDescription(raw?: string): { why: string; what: string; how: HowItem[] } {
+function parseDescription(raw?: string | null): { why: string; what: string; how: HowItem[] } {
   if (!raw) return { why: '', what: '', how: [] }
   try {
     const p = JSON.parse(raw)
