@@ -299,9 +299,9 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             )}
           </div>
 
-          {/* Epics (formerly Tags) */}
+          {/* EPICs (formerly Tags) */}
           <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block">Epics</label>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">EPICs</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {tags.map(tag => {
                 const selected = selectedTagIds.includes(tag.id)
@@ -309,9 +309,14 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                   <button
                     key={tag.id}
                     onClick={() => toggleTag(tag.id)}
-                    className={`transition-opacity ${selected ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                    className={`relative inline-flex items-center group transition-opacity ${selected ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
                   >
                     <TagBadge tag={tag} small />
+                    {selected && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                        ×
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -319,7 +324,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             <div className="flex items-center gap-2 mt-2">
               <input
                 className="input flex-1 h-8 text-xs"
-                placeholder="New epic name…"
+                placeholder="New EPIC name…"
                 value={newTagName}
                 onChange={e => setNewTagName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddTag()}
