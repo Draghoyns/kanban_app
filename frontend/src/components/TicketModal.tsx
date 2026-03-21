@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { X, Plus, RefreshCw, Eye, Edit2 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
-import type { Ticket, TicketStatus, FrequencyType, PriorityLevel } from '@/types'
-import { STATUSES, WEEKDAYS, PRIORITY_LEVELS } from '@/types'
+import type { Ticket, TicketStatus, FrequencyType, PriorityLevel, EstimationSize } from '@/types'
+import { STATUSES, WEEKDAYS, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import TagBadge from './TagBadge'
 
 interface Props {
@@ -48,6 +48,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
   const [description,    setDescription]    = useState(ticket?.description     ?? DESCRIPTION_TEMPLATE)
   const [status,         setStatus]         = useState<TicketStatus>(ticket?.status ?? initialStatus)
   const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
+  const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
   const [previewMd,      setPreviewMd]      = useState(false)
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
@@ -102,6 +103,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
       description: description.trim() || undefined,
       status,
       priority,
+      estimation,
       tag_ids:     selectedTagIds,
       ...routineFields,
     }
@@ -152,6 +154,32 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
               {priority && (
                 <button
                   onClick={() => setPriority(null)}
+                  className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Estimation */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1.5 block">Estimation</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {ESTIMATION_SIZES.map(e => (
+                <button
+                  key={e.id}
+                  onClick={() => setEstimation(estimation === e.id ? null : e.id)}
+                  title={e.hours}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors
+                    ${estimation === e.id ? e.badge : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
+                >
+                  {e.label} <span className="font-normal opacity-60">{e.hours}</span>
+                </button>
+              ))}
+              {estimation && (
+                <button
+                  onClick={() => setEstimation(null)}
                   className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
                 >
                   Clear

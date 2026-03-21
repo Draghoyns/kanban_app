@@ -4,7 +4,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Trash2, RefreshCw, GitBranch } from 'lucide-react'
 import type { Ticket } from '@/types'
-import { STATUSES, PRIORITY_LEVELS } from '@/types'
+import { STATUSES, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import { useStore } from '@/store/useStore'
 import TagBadge from './TagBadge'
 
@@ -56,7 +56,8 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
 
   const cancelLongPress = () => clearTimeout(longPressTimer.current)
 
-  const priority = ticket.priority ? PRIORITY_LEVELS.find(p => p.id === ticket.priority) : null
+  const priority   = ticket.priority   ? PRIORITY_LEVELS.find(p  => p.id  === ticket.priority)   : null
+  const estimation = ticket.estimation ? ESTIMATION_SIZES.find(e => e.id === ticket.estimation) : null
 
   return (
     <>
@@ -93,6 +94,11 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
             {priority && (
               <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${priority.badge}`}>
                 {priority.label}
+              </span>
+            )}
+            {estimation && (
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${estimation.badge}`}>
+                {estimation.label}
               </span>
             )}
             {ticket.is_routine && (
