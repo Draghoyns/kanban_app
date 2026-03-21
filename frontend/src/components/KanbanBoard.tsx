@@ -189,8 +189,8 @@ export default function KanbanBoard() {
       {undoTicket && createPortal(
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-72 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 gap-3">
-            <span className="text-sm text-slate-300 truncate">
-              &ldquo;{undoTicket.ticket.title}&rdquo; marked done
+            <span className="text-sm text-slate-300">
+              Ticket done
             </span>
             <button
               onClick={handleUndo}
