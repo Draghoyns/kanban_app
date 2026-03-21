@@ -5,17 +5,15 @@ import { useStore } from '@/store/useStore'
 const NOTIFICATION_ID = 1
 
 export function useLocalNotifications() {
-  const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { notificationHour, notificationMinute } = useStore()
+  const { notificationHour, notificationMinute, notificationsEnabled: enabled, setNotificationsEnabled: setEnabled } = useStore()
 
   useEffect(() => {
+    // Sync permission state on mount (native only); on web the store value is canonical.
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
         LocalNotifications.checkPermissions().then(p => setEnabled(p.display === 'granted'))
       }).catch(() => {/* plugin not linked yet */})
-    } else if ('Notification' in window) {
-      setEnabled(Notification.permission === 'granted')
     }
   }, [])
 
