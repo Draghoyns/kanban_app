@@ -85,7 +85,7 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <p className="text-sm font-medium text-slate-100 leading-snug">{ticket.title}</p>
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+            <div className="flex items-center gap-0.5 shrink-0">
               {ticket.status !== 'done' && onMarkDone && (
                 <button
                   onClick={e => { e.stopPropagation(); onMarkDone(ticket) }}
