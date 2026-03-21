@@ -242,6 +242,47 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 
 ---
 
+## Todo / Ideas
+
+### Ticket improvements
+- [ ] Due dates with overdue highlighting
+- [ ] Priority levels (low / medium / high / urgent) with visual indicators
+- [ ] Sub-tasks / checklist inside a ticket
+- [ ] Drag to reorder tickets within a column
+
+### Board improvements
+- [ ] Multiple boards (e.g. Work, Personal, Side projects)
+- [ ] Custom columns (rename, add, delete, reorder)
+- [ ] WIP limits per column with visual warning when exceeded
+- [ ] Archive column for done tickets instead of deleting
+
+### EPICs / tags
+- [ ] EPIC progress bar showing % of tickets done
+- [ ] Filter board by EPIC (show only tickets belonging to one EPIC)
+
+### Memos
+- [ ] Pin important memos to the top
+- [ ] Markdown rendering in memo body
+- [ ] Attach a memo to a specific ticket
+
+### Notifications
+- [ ] Per-ticket reminders (remind me on due date)
+- [ ] Daily summary notification (X tickets due today)
+
+### Sync / data
+- [ ] Export board as JSON (manual backup)
+- [ ] Import from JSON backup
+- [ ] Conflict resolution when syncing from multiple devices
+- [ ] iCloud / Google Drive backup (native Capacitor plugin)
+
+### UX / polish
+- [ ] Keyboard shortcuts (N = new ticket, / = search)
+- [ ] Swipe gestures on mobile to move a ticket between columns
+- [ ] Light/dark mode follows system automatically (currently manual)
+- [ ] Undo last delete (toast with "Undo" button, ~5 s window)
+
+---
+
 ## Stack
 
 | Layer    | Tech                                         |
