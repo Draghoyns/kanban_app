@@ -47,7 +47,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, setNotificationHour } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
 
   const [open, setOpen] = useState<Record<string, boolean>>({
@@ -124,17 +124,20 @@ export default function Sidebar() {
               {enabled ? <Bell size={13} /> : <BellOff size={13} />}
               {enabled ? 'Notifications on — tap to disable' : 'Notifications off — tap to enable'}
             </button>
-            {/* Hour picker */}
+            {/* Hour + minute picker */}
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-700">
               <span className="text-xs text-slate-300">Reminder time</span>
               <input
                 type="time"
-                value={`${String(notificationHour).padStart(2, '0')}:00`}
+                value={`${String(notificationHour).padStart(2, '0')}:${String(notificationMinute).padStart(2, '0')}`}
                 onChange={e => {
-                  const h = parseInt(e.target.value.split(':')[0], 10)
-                  if (!isNaN(h)) {
+                  const [hStr, mStr] = e.target.value.split(':')
+                  const h = parseInt(hStr, 10)
+                  const m = parseInt(mStr, 10)
+                  if (!isNaN(h) && !isNaN(m)) {
                     setNotificationHour(h)
-                    reschedule(h)
+                    setNotificationMinute(m)
+                    reschedule(h, m)
                   }
                 }}
                 className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none"

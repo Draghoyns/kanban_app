@@ -7,7 +7,7 @@ const NOTIFICATION_ID = 1
 export function useLocalNotifications() {
   const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { notificationHour } = useStore()
+  const { notificationHour, notificationMinute } = useStore()
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
@@ -28,7 +28,7 @@ export function useLocalNotifications() {
         const result = await LocalNotifications.requestPermissions()
         if (result.display !== 'granted') return
         setEnabled(true)
-        await scheduleDailyReminder(notificationHour)
+        await scheduleDailyReminder(notificationHour, notificationMinute)
       } else {
         // Web: no actual push notifications on non-native platform.
         // Optionally surface browser permission dialog, but always toggle state.
@@ -55,17 +55,17 @@ export function useLocalNotifications() {
     setEnabled(false)
   }
 
-  /** Re-schedule the notification at a new hour (call after user changes the time). */
-  async function reschedule(hour: number) {
+  /** Re-schedule the notification at a new hour+minute (call after user changes the time). */
+  async function reschedule(hour: number, minute: number) {
     if (!enabled) return
-    await scheduleDailyReminder(hour)
+    await scheduleDailyReminder(hour, minute)
   }
 
   return { enabled, loading, enable, disable, reschedule }
 }
 
-/** Schedule (or reschedule) a single repeating daily reminder at the given hour (0–23). */
-export async function scheduleDailyReminder(hour = 9): Promise<void> {
+/** Schedule (or reschedule) a single repeating daily reminder at the given hour and minute. */
+export async function scheduleDailyReminder(hour = 9, minute = 0): Promise<void> {
   if (!Capacitor.isNativePlatform()) return
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -77,8 +77,8 @@ export async function scheduleDailyReminder(hour = 9): Promise<void> {
     }
 
     const at = new Date()
-    at.setHours(hour, 0, 0, 0)
-    // If the target hour already passed today, start tomorrow
+    at.setHours(hour, minute, 0, 0)
+    // If the target time already passed today, start tomorrow
     if (at <= new Date()) at.setDate(at.getDate() + 1)
 
     await LocalNotifications.schedule({
