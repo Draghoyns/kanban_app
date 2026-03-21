@@ -84,11 +84,18 @@ export default function KanbanBoard() {
     }
   }
 
+  const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
+
   const ticketsByStatus = (status: TicketStatus) =>
     displayed
       .filter(t => t.status === status)
       .filter(t => ticketMatchesFilter(t, filters))
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => {
+        const pa = a.priority != null ? (PRIORITY_ORDER[a.priority] ?? 99) : 99
+        const pb = b.priority != null ? (PRIORITY_ORDER[b.priority] ?? 99) : 99
+        if (pa !== pb) return pa - pb
+        return a.position - b.position
+      })
 
   return (
     <>
