@@ -166,7 +166,7 @@ export default function Sidebar() {
               <li><span className="text-slate-300 font-medium">Description</span> — each ticket has three fields: <em>Why</em> (motivation), <em>What</em> (goal), and <em>How</em> (checklist of steps you can tick off).</li>
               <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create or delete them in the EPICs section.</li>
               <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
-              <li><span className="text-slate-300 font-medium">Estimate</span> — XS (~1h) → XL (16h+).</li>
+              <li><span className="text-slate-300 font-medium">Estimate</span> — Fibonacci points: 1 · 2 · 3 · 5 · 8.</li>
               <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
               <li><span className="text-slate-300 font-medium">Notifications</span> — set your daily reminder time in the Notifications section.</li>
             </ul>
