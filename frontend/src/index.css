@@ -24,10 +24,10 @@
 @layer components {
   .btn {
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-           transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-950;
+           transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-950;
   }
   .btn-primary {
-    @apply btn bg-indigo-600 hover:bg-indigo-500 text-white;
+    @apply btn bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold;
   }
   .btn-ghost {
     @apply btn text-slate-400 hover:text-slate-100 hover:bg-slate-800;
@@ -37,7 +37,7 @@
   }
   .input {
     @apply w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100
-           placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+           placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent
            transition-colors;
   }
   .textarea {
@@ -54,3 +54,22 @@
            animate-fade-in;
   }
 }
+
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+html.light body,
+html.light .bg-slate-950 { background-color: #fef9c3 !important; }
+html.light .bg-slate-900 { background-color: #fef3c7 !important; }
+html.light .bg-slate-800 { background-color: #fde68a !important; }
+html.light .bg-slate-800\/60 { background-color: #fde68acc !important; }
+html.light .bg-slate-900\/60 { background-color: #fef3c7cc !important; }
+html.light .bg-slate-950\/80 { background-color: #fef9c3cc !important; }
+html.light .text-slate-100 { color: #1c1917 !important; }
+html.light .text-slate-300 { color: #292524 !important; }
+html.light .text-slate-400 { color: #57534e !important; }
+html.light .text-slate-500 { color: #78716c !important; }
+html.light .text-slate-600 { color: #a8a29e !important; }
+html.light .border-slate-700 { border-color: #f59e0b !important; }
+html.light .border-slate-800 { border-color: #fbbf24 !important; }
+html.light .hover\:bg-slate-800:hover { background-color: #fbbf24 !important; }
+html.light .hover\:bg-slate-800\/60:hover { background-color: #fbbf24cc !important; }
+html.light * { scrollbar-color: #f59e0b transparent; }
