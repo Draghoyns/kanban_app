@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
+import { useStore } from '@/store/useStore'
 
 const NOTIFICATION_ID = 1
 
 export function useLocalNotifications() {
   const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { notificationHour } = useStore()
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
@@ -26,7 +28,7 @@ export function useLocalNotifications() {
         const result = await LocalNotifications.requestPermissions()
         if (result.display !== 'granted') return
         setEnabled(true)
-        await scheduleDailyReminder()
+        await scheduleDailyReminder(notificationHour)
       } else {
         // Web: no actual push notifications on non-native platform.
         // Optionally surface browser permission dialog, but always toggle state.
@@ -53,11 +55,17 @@ export function useLocalNotifications() {
     setEnabled(false)
   }
 
-  return { enabled, loading, enable, disable }
+  /** Re-schedule the notification at a new hour (call after user changes the time). */
+  async function reschedule(hour: number) {
+    if (!enabled) return
+    await scheduleDailyReminder(hour)
+  }
+
+  return { enabled, loading, enable, disable, reschedule }
 }
 
-/** Schedule (or reschedule) a single repeating 9 am daily reminder. */
-export async function scheduleDailyReminder(): Promise<void> {
+/** Schedule (or reschedule) a single repeating daily reminder at the given hour (0–23). */
+export async function scheduleDailyReminder(hour = 9): Promise<void> {
   if (!Capacitor.isNativePlatform()) return
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -69,8 +77,8 @@ export async function scheduleDailyReminder(): Promise<void> {
     }
 
     const at = new Date()
-    at.setHours(9, 0, 0, 0)
-    // If 9 am already passed today, start tomorrow
+    at.setHours(hour, 0, 0, 0)
+    // If the target hour already passed today, start tomorrow
     if (at <= new Date()) at.setDate(at.getDate() + 1)
 
     await LocalNotifications.schedule({

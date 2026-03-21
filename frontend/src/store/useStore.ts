@@ -33,17 +33,19 @@ interface AppStore {
   tickets:     Ticket[]
   memos:       Memo[]
   tags:        Tag[]
-  activeTab:   'kanban' | 'memo'
-  hideDone:    boolean
-  theme:       'dark' | 'light'
-  accentColor: string
-  sidebarOpen: boolean
+  activeTab:        'kanban' | 'memo'
+  hideDone:         boolean
+  theme:            'dark' | 'light'
+  accentColor:      string
+  notificationHour: number
+  sidebarOpen:      boolean
 
-  setActiveTab:    (tab: 'kanban' | 'memo') => void
-  setHideDone:     (v: boolean) => void
-  setTheme:        (theme: 'dark' | 'light') => void
-  setAccentColor:  (color: string) => void
-  setSidebarOpen:  (v: boolean) => void
+  setActiveTab:        (tab: 'kanban' | 'memo') => void
+  setHideDone:         (v: boolean) => void
+  setTheme:            (theme: 'dark' | 'light') => void
+  setAccentColor:      (color: string) => void
+  setNotificationHour: (hour: number) => void
+  setSidebarOpen:      (v: boolean) => void
 
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
@@ -65,17 +67,19 @@ export const useStore = create<AppStore>()(
       tickets:     [],
       memos:       [],
       tags:        [],
-      activeTab:   'kanban',
-      hideDone:    false,
-      theme:       'dark',
-      accentColor: '#ec4899',
-      sidebarOpen: false,
+      activeTab:        'kanban',
+      hideDone:         false,
+      theme:            'dark',
+      accentColor:      '#ec4899',
+      notificationHour: 9,
+      sidebarOpen:      false,
 
-      setActiveTab:   (tab)   => set({ activeTab:   tab }),
-      setHideDone:    (v)     => set({ hideDone:    v }),
-      setTheme:       (theme) => set({ theme }),
-      setAccentColor: (c)     => set({ accentColor: c }),
-      setSidebarOpen: (v)     => set({ sidebarOpen: v }),
+      setActiveTab:        (tab)   => set({ activeTab:        tab }),
+      setHideDone:         (v)     => set({ hideDone:         v }),
+      setTheme:            (theme) => set({ theme }),
+      setAccentColor:      (c)     => set({ accentColor:      c }),
+      setNotificationHour: (h)     => set({ notificationHour: h }),
+      setSidebarOpen:      (v)     => set({ sidebarOpen:      v }),
 
       // ── Tickets ──────────────────────────────────────────────────────────
 

@@ -47,8 +47,8 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor } = useStore()
-  const { enabled, enable, disable } = useLocalNotifications()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, setNotificationHour } = useStore()
+  const { enabled, enable, disable, reschedule } = useLocalNotifications()
 
   const [open, setOpen] = useState<Record<string, boolean>>({
     howto:         false,
@@ -98,6 +98,7 @@ export default function Sidebar() {
               <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
               <li><span className="text-slate-300 font-medium">Estimate</span> — XS (~1h) → XL (16h+).</li>
               <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
+              <li><span className="text-slate-300 font-medium">Notifications</span> — set your daily reminder time in the Notifications section.</li>
             </ul>
           </Section>
 
@@ -109,12 +110,12 @@ export default function Sidebar() {
             onToggle={() => toggle('notifications')}
           >
             <p className="text-xs text-slate-400 leading-relaxed mb-3">
-              When enabled, a daily reminder fires every morning at <span className="text-slate-300 font-medium">9:00 AM</span>.
+              A daily reminder fires at the time you choose below.
               The bell icon in the header also toggles this.
             </p>
             <button
               onClick={enabled ? disable : enable}
-              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors"
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors mb-3"
               style={enabled
                 ? { borderColor: 'color-mix(in srgb, var(--accent) 70%, black)', color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)' }
                 : { borderColor: '#475569', color: '#94a3b8' }
@@ -123,6 +124,23 @@ export default function Sidebar() {
               {enabled ? <Bell size={13} /> : <BellOff size={13} />}
               {enabled ? 'Notifications on — tap to disable' : 'Notifications off — tap to enable'}
             </button>
+            {/* Hour picker */}
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-700">
+              <span className="text-xs text-slate-300">Reminder time</span>
+              <input
+                type="time"
+                value={`${String(notificationHour).padStart(2, '0')}:00`}
+                onChange={e => {
+                  const h = parseInt(e.target.value.split(':')[0], 10)
+                  if (!isNaN(h)) {
+                    setNotificationHour(h)
+                    reschedule(h)
+                  }
+                }}
+                className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 focus:outline-none"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
           </Section>
 
           {/* ── Settings ─────────────────────────────────────────────── */}
