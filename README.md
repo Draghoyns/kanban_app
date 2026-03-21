@@ -2,9 +2,9 @@
 
 A personal Kanban board + memo pad that runs **completely offline** — no internet, no cloud, no accounts.
 
-- The backend (Python/SQLite) runs on your **Mac**
-- The app is installed natively on your **phone**
-- They talk to each other over your **local Wi-Fi** — that's it
+- Install it once on your phone via USB
+- All data is stored **on the phone** — no server, no Wi-Fi required to use it
+- The backend (Python/SQLite) exists for local development in a browser, not required by the phone app
 
 ---
 
@@ -14,17 +14,16 @@ There are three layers:
 
 | Layer | Tech | What it does |
 |---|---|---|
-| Backend | Python (FastAPI) + SQLite | Stores all your data, runs on your Mac |
+| Backend | Python (FastAPI) + SQLite | Dev-only — lets you use the app in a browser on your Mac |
 | Frontend | React + TypeScript + Vite | The UI — runs in a browser during dev, compiled to static files for mobile |
 | Native wrapper | Capacitor | Takes the compiled website and wraps it into an Android/iOS app |
 
-The app on your phone is a WebView (a browser in disguise) loading local files. It calls your Mac's backend over Wi-Fi.
+The phone app stores everything in the phone's local storage (via Zustand `persist`). It makes no network calls — your Mac does not need to be on.
 
 ---
 
 ## What you need
 
-- Your Mac and phone **on the same Wi-Fi network**
 - [Android Studio](https://developer.android.com/studio) (Android) **or** Xcode (iOS)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python package manager
 - [Node.js](https://nodejs.org/) (v18+)
@@ -75,29 +74,18 @@ chmod +x start.sh
 ./start.sh
 ```
 
-This installs Python/Node dependencies and starts the backend at **http://localhost:8000**.  
-Keep this terminal open whenever you want to use the app.
+This installs Python/Node dependencies and starts the backend at **http://localhost:8000**.
+
+> The backend is only needed for browser-based development. The phone app does not use it.
 
 ---
 
-## Step 3 — Find your Mac's local IP address
-
-```bash
-ipconfig getifaddr en0
-```
-
-You'll get something like `192.168.1.42`. Note it down — this is the address your phone will use to reach the backend.
-
----
-
-## Step 4 — Build the app
+## Step 3 — Build the app
 
 ```bash
 cd frontend
 npm install
-
-# Replace the IP below with yours from Step 3
-VITE_API_BASE_URL=http://192.168.1.42:8000 npm run build
+npm run build
 ```
 
 This compiles the React app into static files in `frontend/dist/`.
@@ -110,11 +98,9 @@ npx cap sync
 
 > You'll see iOS-related warnings if Xcode isn't installed — ignore them.
 
-> **Why `VITE_API_BASE_URL`?** During dev, the browser and backend are both on `localhost` so no IP is needed. On the phone, `localhost` means the phone itself, so you have to hardcode your Mac's LAN IP at build time.
-
 ---
 
-## Step 5 — Prepare your Android phone
+## Step 4 — Prepare your Android phone
 
 **Enable Developer Options:**
 1. Settings → About phone → tap **Build number** 7 times
@@ -140,7 +126,7 @@ You should see your device listed as `device`. If it shows `unauthorized`, check
 
 ---
 
-## Step 6 — Install on your phone
+## Step 5 — Install on your phone
 
 ```bash
 cd frontend
@@ -172,11 +158,16 @@ In Xcode:
 
 ## Using the app
 
-- Make sure the backend is running on your Mac (`./start.sh`)
-- Open the app on your phone — it connects automatically over Wi-Fi
-- Everything is stored locally in `backend/kanban.db` (SQLite)
+- Open the app on your phone — it works offline, no Wi-Fi or Mac needed
+- All data is stored on the phone itself
 
-> If the app can't connect, double-check that your phone and Mac are on the same Wi-Fi and that the IP in Step 4 is correct.
+**Local browser development** (optional — to work on the UI without a phone):
+
+```bash
+./start.sh
+```
+
+Opens the app at `http://localhost:5173` with the Python backend at `localhost:8000`. Data is stored in `backend/kanban.db` (SQLite) and is separate from the phone's data.
 
 ---
 
