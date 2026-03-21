@@ -77,7 +77,7 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
         onPointerDown={handlePointerDown}
         onPointerUp={cancelLongPress}
         onPointerMove={cancelLongPress}
-        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all touch-none select-none
+        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none
           ${isDragging ? 'shadow-2xl ring-1 ring-amber-500' : ''}`}
         onClick={showStatusPicker ? undefined : onEdit}
       >
