@@ -16,7 +16,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
   const { setNodeRef, isOver } = useDroppable({ id: status.id })
 
   return (
-    <div className="flex flex-col w-72 shrink-0">
+    <div className="flex flex-col w-[60vw] shrink-0">
       {/* Column header */}
       <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} bg-slate-900/60`}>
         <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
