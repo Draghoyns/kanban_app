@@ -4,6 +4,7 @@ import { useStore } from '@/store/useStore'
 import type { Ticket, TicketStatus, FrequencyType, PriorityLevel, EstimationSize } from '@/types'
 import { STATUSES, WEEKDAYS, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import TagBadge from './TagBadge'
+import MarkdownField from './MarkdownField'
 
 interface Props {
   ticket?:        Ticket
@@ -249,28 +250,22 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
           </div>
 
           {/* Why */}
-          <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block">Why</label>
-            <textarea
-              className="textarea"
-              rows={2}
-              placeholder="Why does this ticket exist?"
-              value={why}
-              onChange={e => setWhy(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label="Why"
+            value={why}
+            onChange={setWhy}
+            rows={2}
+            placeholder="Why does this ticket exist?"
+          />
 
           {/* What */}
-          <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block">What</label>
-            <textarea
-              className="textarea"
-              rows={2}
-              placeholder="What needs to be done?"
-              value={what}
-              onChange={e => setWhat(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label="What"
+            value={what}
+            onChange={setWhat}
+            rows={2}
+            placeholder="What needs to be done?"
+          />
 
           {/* How */}
           <div>
