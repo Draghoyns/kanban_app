@@ -8,6 +8,41 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 
 ---
 
+## Features
+
+### Kanban board
+- **Columns:** Backlog → In Progress → Done
+- **Drag & drop** cards between columns (web); **long-press** a card to pick a new status (mobile)
+- **Hide Done** toggle to keep the board clean
+- **Filter bar** — filter by Priority, Estimation, or EPIC
+
+### Tickets
+- **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
+- **Estimation** — Fibonacci points: 1 · 2 · 3 · 5 · 8
+- **Description** — Markdown editor with live preview
+- **EPICs** — coloured labels; attach multiple EPICs to a ticket
+- **Routines** — tickets that auto-spawn on a daily/weekly/monthly schedule
+
+### EPICs
+- Create and delete EPICs from the **sidebar** or from inside a ticket editor
+- Each EPIC is a coloured badge; deleting an EPIC removes it from all tickets automatically
+
+### Sidebar
+- **EPICs** — full list with create (`+`) and delete (`×`) actions
+- **Notifications** — toggle daily reminder on/off; set reminder time (HH:MM)
+- **Settings** — hide/show Done column; dark / light theme toggle (sun / moon)
+- **Appearance** — choose an accent color from 6 presets or a custom color wheel
+
+### Memos
+- Freeform note pad, separate from the Kanban board
+- Supports EPICs and Markdown
+
+### Notifications
+- Daily reminder at a configurable time
+- Bell icon in the header is synchronised with the sidebar toggle
+
+---
+
 ## How it works
 
 There are three layers:
