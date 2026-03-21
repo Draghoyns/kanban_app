@@ -280,30 +280,32 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                 {howItems.map(item => (
                   <div key={item.id}>
                     {/* Parent item */}
-                    <div className="flex items-center gap-2 group">
+                    <div className="flex items-start gap-2 group">
                       <button
                         onClick={() => toggleHowItem(item.id)}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors mt-0.5
                           ${item.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
                       >
                         {item.done && <span className="text-white text-[9px] leading-none font-bold">✓</span>}
                       </button>
-                      <input
-                        className={`flex-1 bg-transparent text-sm leading-snug outline-none focus:outline-none min-w-0
+                      <textarea
+                        rows={1}
+                        className={`flex-1 bg-transparent text-sm leading-snug outline-none focus:outline-none min-w-0 resize-none overflow-hidden
                           ${item.done ? 'line-through text-slate-500' : 'text-slate-300'}`}
                         value={item.text}
-                        onChange={e => updateHowItem(item.id, e.target.value)}
+                        onChange={e => { updateHowItem(item.id, e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                        onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                       />
                       <button
                         onClick={() => openSubInput(item.id)}
                         title="Add sub-step"
-                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-[var(--accent)] transition-all p-0.5"
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-[var(--accent)] transition-all p-0.5 mt-0.5"
                       >
                         <Plus size={11} />
                       </button>
                       <button
                         onClick={() => removeHowItem(item.id)}
-                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5 mt-0.5"
                       >
                         <X size={12} />
                       </button>
@@ -313,23 +315,25 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                     {item.subItems.length > 0 && (
                       <div className="ml-6 mt-1 space-y-1">
                         {item.subItems.map(sub => (
-                          <div key={sub.id} className="flex items-center gap-2 group">
+                          <div key={sub.id} className="flex items-start gap-2 group">
                             <button
                               onClick={() => toggleSubItem(item.id, sub.id)}
-                              className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+                              className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors mt-0.5
                                 ${sub.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
                             >
                               {sub.done && <span className="text-white text-[8px] leading-none font-bold">✓</span>}
                             </button>
-                            <input
-                              className={`flex-1 bg-transparent text-xs leading-snug outline-none focus:outline-none min-w-0
+                            <textarea
+                              rows={1}
+                              className={`flex-1 bg-transparent text-xs leading-snug outline-none focus:outline-none min-w-0 resize-none overflow-hidden
                                 ${sub.done ? 'line-through text-slate-500' : 'text-slate-400'}`}
                               value={sub.text}
-                              onChange={e => updateSubItem(item.id, sub.id, e.target.value)}
+                              onChange={e => { updateSubItem(item.id, sub.id, e.target.value); e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
+                              onFocus={e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px' }}
                             />
                             <button
                               onClick={() => removeSubItem(item.id, sub.id)}
-                              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
+                              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5 mt-0.5"
                             >
                               <X size={10} />
                             </button>
