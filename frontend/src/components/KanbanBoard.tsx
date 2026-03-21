@@ -39,7 +39,7 @@ export default function KanbanBoard() {
   const displayed = activeTicket ? localTickets : tickets
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   function handleDragStart({ active }: DragStartEvent) {
