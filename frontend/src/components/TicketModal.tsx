@@ -18,17 +18,20 @@ const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
   { id: 'interval', label: 'Interval' },
 ]
 
-interface HowItem { id: string; text: string; done: boolean }
+interface HowSubItem { id: string; text: string; done: boolean }
+interface HowItem    { id: string; text: string; done: boolean; subItems: HowSubItem[] }
 
 function parseDescription(raw?: string | null): { why: string; what: string; how: HowItem[] } {
   if (!raw) return { why: '', what: '', how: [] }
   try {
     const p = JSON.parse(raw)
     if (p && typeof p === 'object' && 'why' in p) {
-      return { why: p.why ?? '', what: p.what ?? '', how: Array.isArray(p.how) ? p.how : [] }
+      const how: HowItem[] = Array.isArray(p.how)
+        ? p.how.map((item: HowItem) => ({ ...item, subItems: item.subItems ?? [] }))
+        : []
+      return { why: p.why ?? '', what: p.what ?? '', how }
     }
   } catch {}
-  // Legacy plain-text: put it in Why
   return { why: raw, what: '', how: [] }
 }
 
@@ -42,6 +45,8 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
   const [what,           setWhat]           = useState(parsed.what)
   const [howItems,       setHowItems]       = useState<HowItem[]>(parsed.how)
   const [howInput,       setHowInput]       = useState('')
+  const [subInputId,     setSubInputId]     = useState<string | null>(null)
+  const [subInput,       setSubInput]       = useState('')
   const [status,         setStatus]         = useState<TicketStatus>(ticket?.status ?? initialStatus)
   const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
   const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
@@ -72,8 +77,12 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
 
   function addHowItem() {
     if (!howInput.trim()) return
-    setHowItems(prev => [...prev, { id: crypto.randomUUID(), text: howInput.trim(), done: false }])
+    setHowItems(prev => [...prev, { id: crypto.randomUUID(), text: howInput.trim(), done: false, subItems: [] }])
     setHowInput('')
+  }
+
+  function updateHowItem(id: string, text: string) {
+    setHowItems(prev => prev.map(item => item.id === id ? { ...item, text } : item))
   }
 
   function toggleHowItem(id: string) {
@@ -82,6 +91,46 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
 
   function removeHowItem(id: string) {
     setHowItems(prev => prev.filter(item => item.id !== id))
+  }
+
+  function openSubInput(parentId: string) {
+    setSubInputId(parentId)
+    setSubInput('')
+  }
+
+  function addSubItem(parentId: string) {
+    if (!subInput.trim()) { setSubInputId(null); return }
+    setHowItems(prev => prev.map(item =>
+      item.id === parentId
+        ? { ...item, subItems: [...item.subItems, { id: crypto.randomUUID(), text: subInput.trim(), done: false }] }
+        : item
+    ))
+    setSubInput('')
+    setSubInputId(null)
+  }
+
+  function updateSubItem(parentId: string, subId: string, text: string) {
+    setHowItems(prev => prev.map(item =>
+      item.id === parentId
+        ? { ...item, subItems: item.subItems.map(s => s.id === subId ? { ...s, text } : s) }
+        : item
+    ))
+  }
+
+  function toggleSubItem(parentId: string, subId: string) {
+    setHowItems(prev => prev.map(item =>
+      item.id === parentId
+        ? { ...item, subItems: item.subItems.map(s => s.id === subId ? { ...s, done: !s.done } : s) }
+        : item
+    ))
+  }
+
+  function removeSubItem(parentId: string, subId: string) {
+    setHowItems(prev => prev.map(item =>
+      item.id === parentId
+        ? { ...item, subItems: item.subItems.filter(s => s.id !== subId) }
+        : item
+    ))
   }
 
   function handleAddTag() {
@@ -227,25 +276,85 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1.5 block">How</label>
             {howItems.length > 0 && (
-              <div className="space-y-1.5 mb-2">
+              <div className="space-y-1 mb-2">
                 {howItems.map(item => (
-                  <div key={item.id} className="flex items-center gap-2 group">
-                    <button
-                      onClick={() => toggleHowItem(item.id)}
-                      className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
-                        ${item.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
-                    >
-                      {item.done && <span className="text-white text-[9px] leading-none font-bold">✓</span>}
-                    </button>
-                    <span className={`text-sm flex-1 leading-snug ${item.done ? 'line-through text-slate-500' : 'text-slate-300'}`}>
-                      {item.text}
-                    </span>
-                    <button
-                      onClick={() => removeHowItem(item.id)}
-                      className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
-                    >
-                      <X size={12} />
-                    </button>
+                  <div key={item.id}>
+                    {/* Parent item */}
+                    <div className="flex items-center gap-2 group">
+                      <button
+                        onClick={() => toggleHowItem(item.id)}
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+                          ${item.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
+                      >
+                        {item.done && <span className="text-white text-[9px] leading-none font-bold">✓</span>}
+                      </button>
+                      <input
+                        className={`flex-1 bg-transparent text-sm leading-snug outline-none focus:outline-none min-w-0
+                          ${item.done ? 'line-through text-slate-500' : 'text-slate-300'}`}
+                        value={item.text}
+                        onChange={e => updateHowItem(item.id, e.target.value)}
+                      />
+                      <button
+                        onClick={() => openSubInput(item.id)}
+                        title="Add sub-step"
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-[var(--accent)] transition-all p-0.5"
+                      >
+                        <Plus size={11} />
+                      </button>
+                      <button
+                        onClick={() => removeHowItem(item.id)}
+                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+
+                    {/* Sub-items */}
+                    {item.subItems.length > 0 && (
+                      <div className="ml-6 mt-1 space-y-1">
+                        {item.subItems.map(sub => (
+                          <div key={sub.id} className="flex items-center gap-2 group">
+                            <button
+                              onClick={() => toggleSubItem(item.id, sub.id)}
+                              className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+                                ${sub.done ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-slate-600 hover:border-slate-400'}`}
+                            >
+                              {sub.done && <span className="text-white text-[8px] leading-none font-bold">✓</span>}
+                            </button>
+                            <input
+                              className={`flex-1 bg-transparent text-xs leading-snug outline-none focus:outline-none min-w-0
+                                ${sub.done ? 'line-through text-slate-500' : 'text-slate-400'}`}
+                              value={sub.text}
+                              onChange={e => updateSubItem(item.id, sub.id, e.target.value)}
+                            />
+                            <button
+                              onClick={() => removeSubItem(item.id, sub.id)}
+                              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-0.5"
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Sub-item input */}
+                    {subInputId === item.id && (
+                      <div className="ml-6 mt-1 flex items-center gap-2">
+                        <input
+                          autoFocus
+                          className="input flex-1 h-7 text-xs"
+                          placeholder="Add sub-step…"
+                          value={subInput}
+                          onChange={e => setSubInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') { e.preventDefault(); addSubItem(item.id) }
+                            if (e.key === 'Escape') { setSubInputId(null) }
+                          }}
+                          onBlur={() => addSubItem(item.id)}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
