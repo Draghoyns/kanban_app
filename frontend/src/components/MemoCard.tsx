@@ -52,12 +52,12 @@ export default function MemoCard({ memo, onEdit }: Props) {
         <Pin size={11} className="absolute top-2 left-2 text-amber-400 fill-current" />
       )}
 
-      <h3 className="font-semibold text-slate-100 text-sm pr-16 line-clamp-2 leading-snug">
+      <h3 className="font-semibold text-slate-100 text-sm pr-16 leading-snug">
         {memo.title}
       </h3>
 
       {memo.content && (
-        <p className="text-xs text-slate-400 line-clamp-5 leading-relaxed whitespace-pre-wrap">
+        <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
           {memo.content}
         </p>
       )}

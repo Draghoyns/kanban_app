@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Trash2, RefreshCw, GitBranch } from 'lucide-react'
+import { Trash2, RefreshCw, GitBranch, CheckCheck } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { STATUSES, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import { useStore } from '@/store/useStore'
@@ -12,6 +12,7 @@ interface Props {
   ticket:      Ticket
   onEdit?:     () => void
   isDragging?: boolean
+  onMarkDone?: (ticket: Ticket) => void
 }
 
 /** Extract a plain-text preview from a description (JSON structured or legacy markdown) */
@@ -34,7 +35,7 @@ function descPreview(raw: string): string {
     .trim()
 }
 
-export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
+export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: Props) {
   const { deleteTicket, updateTicketStatus } = useStore()
   const [showStatusPicker, setShowStatusPicker] = useState(false)
   const longPressTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -77,19 +78,30 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
         onPointerDown={handlePointerDown}
         onPointerUp={cancelLongPress}
         onPointerMove={cancelLongPress}
-        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all touch-none select-none
+        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-pan-x
           ${isDragging ? 'shadow-2xl ring-1 ring-amber-500' : ''}`}
         onClick={showStatusPicker ? undefined : onEdit}
       >
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <p className="text-sm font-medium text-slate-100 leading-snug line-clamp-2">{ticket.title}</p>
-            <button
-              onClick={handleDelete}
-              className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all shrink-0 p-0.5"
-            >
-              <Trash2 size={13} />
-            </button>
+            <p className="text-sm font-medium text-slate-100 leading-snug">{ticket.title}</p>
+            <div className="flex items-center gap-0.5 shrink-0">
+              {ticket.status !== 'done' && onMarkDone && (
+                <button
+                  onClick={e => { e.stopPropagation(); onMarkDone(ticket) }}
+                  title="Mark as done"
+                  className="text-slate-600 hover:text-emerald-400 transition-colors p-0.5"
+                >
+                  <CheckCheck size={13} />
+                </button>
+              )}
+              <button
+                onClick={handleDelete}
+                className="text-slate-600 hover:text-rose-400 transition-all p-0.5"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
           </div>
 
           {ticket.description && (

@@ -4,6 +4,7 @@ import { useStore } from '@/store/useStore'
 import type { Memo } from '@/types'
 import { MEMO_COLORS } from '@/types'
 import TagBadge from './TagBadge'
+import MarkdownField from './MarkdownField'
 
 interface Props {
   memo?:   Memo
@@ -84,12 +85,11 @@ export default function MemoModal({ memo, onClose }: Props) {
           />
 
           {/* Content */}
-          <textarea
-            className="textarea"
+          <MarkdownField
+            value={content}
+            onChange={setContent}
             rows={8}
             placeholder="Write your memo…"
-            value={content}
-            onChange={e => setContent(e.target.value)}
           />
 
           {/* Color picker */}
