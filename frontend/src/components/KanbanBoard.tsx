@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
   PointerSensor, useSensor, useSensors, closestCorners,
@@ -32,6 +32,44 @@ export default function KanbanBoard() {
   const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
   const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [] })
+
+  // Undo toast state
+  const [undoTicket, setUndoTicket]     = useState<{ ticket: Ticket; prevStatus: TicketStatus } | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout>>()
+  const [undoProgress, setUndoProgress] = useState(0)
+  const progressTimer = useRef<ReturnType<typeof setInterval>>()
+
+  function handleMarkDone(ticket: Ticket) {
+    const prevStatus = ticket.status
+    updateTicketStatus(ticket.id, 'done')
+    // Clear any existing undo
+    clearTimeout(undoTimer.current)
+    clearInterval(progressTimer.current)
+    setUndoTicket({ ticket, prevStatus })
+    setUndoProgress(0)
+    // Animate progress bar
+    const start = Date.now()
+    const DURATION = 5000
+    progressTimer.current = setInterval(() => {
+      const elapsed = Date.now() - start
+      setUndoProgress(Math.min(elapsed / DURATION, 1))
+      if (elapsed >= DURATION) clearInterval(progressTimer.current)
+    }, 50)
+    // Auto-dismiss
+    undoTimer.current = setTimeout(() => {
+      setUndoTicket(null)
+      setUndoProgress(0)
+    }, DURATION)
+  }
+
+  function handleUndo() {
+    if (!undoTicket) return
+    clearTimeout(undoTimer.current)
+    clearInterval(progressTimer.current)
+    updateTicketStatus(undoTicket.ticket.id, undoTicket.prevStatus)
+    setUndoTicket(null)
+    setUndoProgress(0)
+  }
 
   const visibleStatuses = hideDone ? STATUSES.filter(s => s.id !== 'done') : STATUSES
 
@@ -116,6 +154,7 @@ export default function KanbanBoard() {
               tickets={ticketsByStatus(status.id)}
               onAddTicket={() => setCreateStatus(status.id)}
               onEditTicket={setEditTicket}
+              onMarkDone={handleMarkDone}
             />
           ))}
         </div>
@@ -144,6 +183,32 @@ export default function KanbanBoard() {
           ticket={editTicket}
           onClose={() => setEditTicket(null)}
         />
+      )}
+
+      {/* Undo toast */}
+      {undoTicket && createPortal(
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-72 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 gap-3">
+            <span className="text-sm text-slate-300 truncate">
+              &ldquo;{undoTicket.ticket.title}&rdquo; marked done
+            </span>
+            <button
+              onClick={handleUndo}
+              className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors"
+              style={{ color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}
+            >
+              Undo
+            </button>
+          </div>
+          {/* Progress bar draining left-to-right */}
+          <div className="h-0.5 bg-slate-700">
+            <div
+              className="h-full transition-none"
+              style={{ width: `${(1 - undoProgress) * 100}%`, backgroundColor: 'var(--accent)' }}
+            />
+          </div>
+        </div>,
+        document.body
       )}
     </>
   )

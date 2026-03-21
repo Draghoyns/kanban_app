@@ -10,9 +10,10 @@ interface Props {
   tickets:      Ticket[]
   onAddTicket:  () => void
   onEditTicket: (ticket: Ticket) => void
+  onMarkDone:   (ticket: Ticket) => void
 }
 
-export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicket }: Props) {
+export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicket, onMarkDone }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status.id })
 
   return (
@@ -47,6 +48,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
               key={ticket.id}
               ticket={ticket}
               onEdit={() => onEditTicket(ticket)}
+              onMarkDone={onMarkDone}
             />
           ))}
         </SortableContext>
