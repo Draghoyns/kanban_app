@@ -19,7 +19,9 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
     (ticket.priority != null && filters.priorities.includes(ticket.priority))
   const epicOk = filters.epicIds.length === 0 ||
     ticket.tags.some(t => filters.epicIds.includes(t.id))
-  return priorityOk && epicOk
+  const estimationOk = filters.estimations.length === 0 ||
+    (ticket.estimation != null && filters.estimations.includes(ticket.estimation))
+  return priorityOk && epicOk && estimationOk
 }
 
 export default function KanbanBoard() {
@@ -29,7 +31,7 @@ export default function KanbanBoard() {
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
   const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
-  const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [] })
+  const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [] })
 
   const visibleStatuses = hideDone ? STATUSES.filter(s => s.id !== 'done') : STATUSES
 
