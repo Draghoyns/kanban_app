@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --accent: #ec4899;
+}
+
 @layer base {
   html, body {
     @apply bg-slate-950 text-slate-100 antialiased;
@@ -24,10 +28,15 @@
 @layer components {
   .btn {
     @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-           transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-950;
+           transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950;
+    --tw-ring-color: var(--accent);
   }
   .btn-primary {
-    @apply btn bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold;
+    @apply btn text-slate-950 font-semibold;
+    background-color: var(--accent);
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--accent) 80%, white);
   }
   .btn-ghost {
     @apply btn text-slate-400 hover:text-slate-100 hover:bg-slate-800;
@@ -37,8 +46,9 @@
   }
   .input {
     @apply w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100
-           placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent
+           placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-transparent
            transition-colors;
+    --tw-ring-color: var(--accent);
   }
   .textarea {
     @apply input resize-none;
@@ -68,8 +78,8 @@ html.light .text-slate-300 { color: #292524 !important; }
 html.light .text-slate-400 { color: #57534e !important; }
 html.light .text-slate-500 { color: #78716c !important; }
 html.light .text-slate-600 { color: #a8a29e !important; }
-html.light .border-slate-700 { border-color: #f59e0b !important; }
-html.light .border-slate-800 { border-color: #fbbf24 !important; }
-html.light .hover\:bg-slate-800:hover { background-color: #fbbf24 !important; }
-html.light .hover\:bg-slate-800\/60:hover { background-color: #fbbf24cc !important; }
-html.light * { scrollbar-color: #f59e0b transparent; }
+html.light .border-slate-700 { border-color: var(--accent) !important; }
+html.light .border-slate-800 { border-color: color-mix(in srgb, var(--accent) 70%, white) !important; }
+html.light .hover\:bg-slate-800:hover { background-color: color-mix(in srgb, var(--accent) 30%, white) !important; }
+html.light .hover\:bg-slate-800\/60:hover { background-color: color-mix(in srgb, var(--accent) 20%, white) !important; }
+html.light * { scrollbar-color: var(--accent) transparent; }

@@ -6,7 +6,7 @@ import MemoTab     from '@/components/MemoTab'
 import Sidebar     from '@/components/Sidebar'
 
 export default function App() {
-  const { activeTab, generateRoutineTickets, sidebarOpen, theme } = useStore()
+  const { activeTab, generateRoutineTickets, sidebarOpen, theme, accentColor } = useStore()
 
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
@@ -19,6 +19,11 @@ export default function App() {
       document.documentElement.classList.remove('light')
     }
   }, [theme])
+
+  // Sync accent color CSS custom property
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', accentColor)
+  }, [accentColor])
 
   return (
     <div className="flex flex-col h-full">
