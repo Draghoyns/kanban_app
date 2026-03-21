@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
+import TagBadge from '@/components/TagBadge'
 
 const PALETTE_PRESETS = [
   { name: 'Pink',    color: '#ec4899' },
@@ -47,7 +48,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, deleteTag } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
 
   const [open, setOpen] = useState<Record<string, boolean>>({
@@ -245,6 +246,33 @@ export default function Sidebar() {
               </label>
             </div>
             <p className="text-[10px] text-slate-600 mt-2">{accentColor}</p>
+          </Section>
+
+          {/* ── EPICs ────────────────────────────────────────────────── */}
+          <Section
+            icon={<Tag size={15} style={{ color: 'var(--accent)' }} />}
+            title="EPICs"
+            open={open.epics ?? true}
+            onToggle={() => toggle('epics')}
+          >
+            {tags.length === 0 ? (
+              <p className="text-xs text-slate-500 italic">No EPICs yet. Create one inside a ticket.</p>
+            ) : (
+              <ul className="space-y-1.5">
+                {tags.map(tag => (
+                  <li key={tag.id} className="flex items-center justify-between gap-2">
+                    <TagBadge tag={tag} small />
+                    <button
+                      onClick={() => deleteTag(tag.id)}
+                      title="Delete EPIC"
+                      className="shrink-0 text-slate-600 hover:text-rose-400 transition-colors p-0.5 rounded"
+                    >
+                      <X size={12} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Section>
 
           {/* ── About ────────────────────────────────────────────────── */}
