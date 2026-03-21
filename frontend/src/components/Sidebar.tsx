@@ -52,7 +52,7 @@ export default function Sidebar() {
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
 
   const [newEpicName,  setNewEpicName]  = useState('')
-  const [newEpicColor, setNewEpicColor] = useState('#f59e0b')
+  const [newEpicColor, setNewEpicColor] = useState('#ec4899')
 
   function handleAddEpic() {
     if (!newEpicName.trim()) return

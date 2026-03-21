@@ -52,7 +52,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
   const [previewMd,      setPreviewMd]      = useState(false)
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
-  const [newTagColor,    setNewTagColor]    = useState('#f59e0b')
+  const [newTagColor,    setNewTagColor]    = useState('#ec4899')
   const [error,          setError]          = useState('')
 
   // Routine state
