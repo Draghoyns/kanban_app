@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 import TagBadge from '@/components/TagBadge'
@@ -48,8 +48,17 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, deleteTag } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
+
+  const [newEpicName,  setNewEpicName]  = useState('')
+  const [newEpicColor, setNewEpicColor] = useState('#f59e0b')
+
+  function handleAddEpic() {
+    if (!newEpicName.trim()) return
+    createTag({ name: newEpicName.trim(), color: newEpicColor })
+    setNewEpicName('')
+  }
 
   const [open, setOpen] = useState<Record<string, boolean>>({
     howto:         false,
@@ -95,7 +104,7 @@ export default function Sidebar() {
               <li><span className="text-slate-300 font-medium">Move (web)</span> — drag any card to another column.</li>
               <li><span className="text-slate-300 font-medium">Move (mobile)</span> — long-press a card to pick a new status.</li>
               <li><span className="text-slate-300 font-medium">Filter</span> — use the filter bar to narrow by priority, estimate, or EPIC.</li>
-              <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create them in the ticket editor.</li>
+              <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create or delete them in the EPICs section.</li>
               <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
               <li><span className="text-slate-300 font-medium">Estimate</span> — XS (~1h) → XL (16h+).</li>
               <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
@@ -256,9 +265,9 @@ export default function Sidebar() {
             onToggle={() => toggle('epics')}
           >
             {tags.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">No EPICs yet. Create one inside a ticket.</p>
+              <p className="text-xs text-slate-500 italic mb-3">No EPICs yet. Use the form below to create one.</p>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className="space-y-1.5 mb-3">
                 {tags.map(tag => (
                   <li key={tag.id} className="flex items-center justify-between gap-2">
                     <TagBadge tag={tag} small />
@@ -273,6 +282,29 @@ export default function Sidebar() {
                 ))}
               </ul>
             )}
+            {/* Create EPIC */}
+            <div className="flex items-center gap-2">
+              <input
+                className="input flex-1 h-8 text-xs"
+                placeholder="New EPIC name…"
+                value={newEpicName}
+                onChange={e => setNewEpicName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddEpic()}
+              />
+              <input
+                type="color"
+                className="w-8 h-8 rounded-lg border border-slate-700 bg-slate-800 cursor-pointer p-0.5 shrink-0"
+                value={newEpicColor}
+                onChange={e => setNewEpicColor(e.target.value)}
+              />
+              <button
+                onClick={handleAddEpic}
+                className="btn-ghost py-1 px-2 text-xs shrink-0"
+                title="Add EPIC"
+              >
+                <Plus size={13} />
+              </button>
+            </div>
           </Section>
 
           {/* ── About ────────────────────────────────────────────────── */}
