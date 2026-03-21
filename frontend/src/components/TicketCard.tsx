@@ -14,9 +14,17 @@ interface Props {
   isDragging?: boolean
 }
 
-/** Strip markdown syntax for plain-text preview */
-function stripMd(text: string): string {
-  return text
+/** Extract a plain-text preview from a description (JSON structured or legacy markdown) */
+function descPreview(raw: string): string {
+  try {
+    const p = JSON.parse(raw)
+    if (p && typeof p === 'object' && 'why' in p) {
+      const parts = [p.why, p.what].filter(Boolean)
+      return parts.join(' · ').trim()
+    }
+  } catch {}
+  // Legacy markdown: strip syntax
+  return raw
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
@@ -86,7 +94,7 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
 
           {ticket.description && (
             <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-              {stripMd(ticket.description)}
+              {descPreview(ticket.description)}
             </p>
           )}
 
