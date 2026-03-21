@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate } from '@/types'
+import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate, EstimationSize } from '@/types'
 
 const genId = () => Date.now() + Math.floor(Math.random() * 1000)
 const now   = () => new Date().toISOString()
@@ -30,12 +30,28 @@ function isDue(t: Ticket, today: Date): boolean {
 }
 
 interface AppStore {
-  tickets:   Ticket[]
-  memos:     Memo[]
-  tags:      Tag[]
-  activeTab: 'kanban' | 'memo'
+  tickets:     Ticket[]
+  memos:       Memo[]
+  tags:        Tag[]
+  activeTab:        'kanban' | 'memo'
+  hideDone:         boolean
+  theme:            'dark' | 'light'
+  accentColor:      string
+  notificationHour:     number
+  notificationMinute:   number
+  notificationsEnabled: boolean
+  sidebarOpen:          boolean
+  backendUrl:           string
 
-  setActiveTab: (tab: 'kanban' | 'memo') => void
+  setActiveTab:           (tab: 'kanban' | 'memo') => void
+  setHideDone:            (v: boolean) => void
+  setTheme:               (theme: 'dark' | 'light') => void
+  setAccentColor:         (color: string) => void
+  setNotificationHour:    (hour: number) => void
+  setNotificationMinute:  (minute: number) => void
+  setNotificationsEnabled:(v: boolean) => void
+  setSidebarOpen:         (v: boolean) => void
+  setBackendUrl:          (url: string) => void
 
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
@@ -54,12 +70,28 @@ interface AppStore {
 export const useStore = create<AppStore>()(
   persist(
     (set, get) => ({
-      tickets:   [],
-      memos:     [],
-      tags:      [],
-      activeTab: 'kanban',
+      tickets:     [],
+      memos:       [],
+      tags:        [],
+      activeTab:        'kanban',
+      hideDone:         false,
+      theme:            'dark',
+      accentColor:      '#ec4899',
+      notificationHour:     9,
+      notificationMinute:   0,
+      notificationsEnabled: false,
+      sidebarOpen:          false,
+      backendUrl:           'http://192.168.1.3:8000',
 
-      setActiveTab: (tab) => set({ activeTab: tab }),
+      setActiveTab:            (tab)   => set({ activeTab:            tab }),
+      setHideDone:             (v)     => set({ hideDone:             v }),
+      setTheme:                (theme) => set({ theme }),
+      setAccentColor:          (c)     => set({ accentColor:          c }),
+      setNotificationHour:     (h)     => set({ notificationHour:     h }),
+      setNotificationMinute:   (m)     => set({ notificationMinute:   m }),
+      setNotificationsEnabled: (v)     => set({ notificationsEnabled: v }),
+      setSidebarOpen:          (v)     => set({ sidebarOpen:          v }),
+      setBackendUrl:           (url)   => set({ backendUrl:           url }),
 
       // ── Tickets ──────────────────────────────────────────────────────────
 
@@ -70,6 +102,8 @@ export const useStore = create<AppStore>()(
           title:              data.title,
           description:        data.description        ?? null,
           status:             data.status             ?? 'backlog',
+          priority:           data.priority           ?? null,
+          estimation:         data.estimation         ?? null,
           position:           get().tickets.filter(t => t.status === (data.status ?? 'backlog')).length,
           is_routine:         data.is_routine         ?? false,
           frequency_type:     data.frequency_type     ?? null,
@@ -97,6 +131,8 @@ export const useStore = create<AppStore>()(
               ...(data.title              != null    ? { title: data.title }                           : {}),
               ...(data.description        != null    ? { description: data.description }               : {}),
               ...(data.status             != null    ? { status: data.status }                         : {}),
+              ...(data.priority           !== undefined ? { priority: data.priority }                  : {}),
+              ...(data.estimation         !== undefined ? { estimation: data.estimation }              : {}),
               ...(data.position           != null    ? { position: data.position }                     : {}),
               ...(data.is_routine         != null    ? { is_routine: data.is_routine }                 : {}),
               ...(data.frequency_type     !== undefined ? { frequency_type: data.frequency_type }         : {}),
@@ -139,6 +175,8 @@ export const useStore = create<AppStore>()(
           title:              t.title,
           description:        t.description,
           status:             'backlog',
+          priority:           t.priority ?? null,
+          estimation:         t.estimation ?? null,
           position:           tickets.filter(x => x.status === 'backlog').length + i,
           is_routine:         false,
           frequency_type:     null,

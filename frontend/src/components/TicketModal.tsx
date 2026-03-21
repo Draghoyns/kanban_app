@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, RefreshCw } from 'lucide-react'
+import { X, Plus, RefreshCw, Eye, Edit2 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
-import type { Ticket, TicketStatus, FrequencyType } from '@/types'
-import { STATUSES, WEEKDAYS } from '@/types'
+import type { Ticket, TicketStatus, FrequencyType, PriorityLevel, EstimationSize } from '@/types'
+import { STATUSES, WEEKDAYS, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import TagBadge from './TagBadge'
 
 interface Props {
@@ -18,15 +18,41 @@ const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
   { id: 'interval', label: 'Interval' },
 ]
 
+const DESCRIPTION_TEMPLATE = `## Why\n\n\n## What\n\n\n## How\n\n`
+
+/** Minimal markdown → React renderer for preview */
+function MarkdownPreview({ content }: { content: string }) {
+  const lines  = content.split('\n')
+  const nodes: React.ReactNode[] = []
+
+  lines.forEach((line, i) => {
+    if (line.startsWith('## '))
+      nodes.push(<h2 key={i} className="text-sm font-semibold text-amber-400 mt-3 mb-0.5">{line.slice(3)}</h2>)
+    else if (line.startsWith('# '))
+      nodes.push(<h1 key={i} className="text-base font-bold text-slate-100 mt-3 mb-1">{line.slice(2)}</h1>)
+    else if (line.startsWith('### '))
+      nodes.push(<h3 key={i} className="text-sm font-semibold text-slate-300 mt-2 mb-0.5">{line.slice(4)}</h3>)
+    else if (line.trim() === '')
+      nodes.push(<div key={i} className="h-1" />)
+    else
+      nodes.push(<p key={i} className="text-sm text-slate-300 leading-relaxed">{line}</p>)
+  })
+
+  return <div className="space-y-0">{nodes}</div>
+}
+
 export default function TicketModal({ ticket, initialStatus = 'backlog', onClose }: Props) {
   const { tags, createTicket, updateTicket, createTag } = useStore()
 
-  const [title,          setTitle]          = useState(ticket?.title       ?? '')
-  const [description,    setDescription]    = useState(ticket?.description ?? '')
+  const [title,          setTitle]          = useState(ticket?.title           ?? '')
+  const [description,    setDescription]    = useState(ticket?.description     ?? DESCRIPTION_TEMPLATE)
   const [status,         setStatus]         = useState<TicketStatus>(ticket?.status ?? initialStatus)
+  const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
+  const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
+  const [previewMd,      setPreviewMd]      = useState(false)
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
-  const [newTagColor,    setNewTagColor]    = useState('#6366f1')
+  const [newTagColor,    setNewTagColor]    = useState('#ec4899')
   const [error,          setError]          = useState('')
 
   // Routine state
@@ -76,6 +102,8 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
       title:       title.trim(),
       description: description.trim() || undefined,
       status,
+      priority,
+      estimation,
       tag_ids:     selectedTagIds,
       ...routineFields,
     }
@@ -96,6 +124,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
         </div>
 
         <div className="p-5 space-y-4">
+          {/* Title */}
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1 block">Title *</label>
             <input
@@ -108,17 +137,84 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             />
           </div>
 
+          {/* Priority */}
           <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block">Description</label>
-            <textarea
-              className="textarea"
-              rows={3}
-              placeholder="Optional description…"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-            />
+            <label className="text-xs font-medium text-slate-400 mb-1.5 block">Priority</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {PRIORITY_LEVELS.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setPriority(priority === p.id ? null : p.id)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold border transition-colors
+                    ${priority === p.id ? p.badge : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
+                >
+                  {p.label}
+                </button>
+              ))}
+              {priority && (
+                <button
+                  onClick={() => setPriority(null)}
+                  className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* Estimation */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1.5 block">Estimation</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {ESTIMATION_SIZES.map(e => (
+                <button
+                  key={e.id}
+                  onClick={() => setEstimation(estimation === e.id ? null : e.id)}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors
+                    ${estimation === e.id ? e.badge : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
+                >
+                  {e.label}
+                </button>
+              ))}
+              {estimation && (
+                <button
+                  onClick={() => setEstimation(null)}
+                  className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Description with markdown preview */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-slate-400">Description</label>
+              <button
+                onClick={() => setPreviewMd(v => !v)}
+                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-amber-400 transition-colors"
+              >
+                {previewMd ? <Edit2 size={11} /> : <Eye size={11} />}
+                {previewMd ? 'Edit' : 'Preview'}
+              </button>
+            </div>
+            {previewMd ? (
+              <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 min-h-[96px]">
+                <MarkdownPreview content={description} />
+              </div>
+            ) : (
+              <textarea
+                className="textarea"
+                rows={6}
+                placeholder="Description (supports markdown)…"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+              />
+            )}
+          </div>
+
+          {/* Status */}
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1 block">Status</label>
             <div className="flex flex-wrap gap-2">
@@ -144,10 +240,10 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
               className="flex items-center gap-2 w-full"
             >
               <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors shrink-0
-                ${isRoutine ? 'bg-indigo-600 border-indigo-600' : 'border-slate-600'}`}>
-                {isRoutine && <span className="text-white text-[10px] leading-none">✓</span>}
+                ${isRoutine ? 'bg-amber-500 border-amber-500' : 'border-slate-600'}`}>
+                {isRoutine && <span className="text-slate-950 text-[10px] leading-none font-bold">✓</span>}
               </div>
-              <RefreshCw size={13} className={isRoutine ? 'text-indigo-400' : 'text-slate-500'} />
+              <RefreshCw size={13} className={isRoutine ? 'text-amber-400' : 'text-slate-500'} />
               <span className="text-xs font-medium text-slate-300">Routine ticket</span>
             </button>
 
@@ -160,7 +256,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                       onClick={() => setFrequencyType(opt.id)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors
                         ${frequencyType === opt.id
-                          ? 'bg-indigo-600 border-indigo-600 text-white'
+                          ? 'bg-amber-500 border-amber-500 text-slate-950 font-semibold'
                           : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}
                     >
                       {opt.label}
@@ -176,7 +272,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                         onClick={() => toggleDay(day.id)}
                         className={`w-9 py-1 rounded-lg text-xs font-medium border transition-colors
                           ${frequencyDays.includes(day.id)
-                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                            ? 'bg-amber-500 border-amber-500 text-slate-950 font-semibold'
                             : 'border-slate-700 text-slate-500 hover:border-slate-500'}`}
                       >
                         {day.label}
@@ -203,8 +299,9 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             )}
           </div>
 
+          {/* EPICs (formerly Tags) */}
           <div>
-            <label className="text-xs font-medium text-slate-400 mb-1 block">Tags</label>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">EPICs</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {tags.map(tag => {
                 const selected = selectedTagIds.includes(tag.id)
@@ -212,9 +309,14 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
                   <button
                     key={tag.id}
                     onClick={() => toggleTag(tag.id)}
-                    className={`transition-opacity ${selected ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                    className={`relative inline-flex items-center group transition-opacity ${selected ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
                   >
                     <TagBadge tag={tag} small />
+                    {selected && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                        ×
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -222,7 +324,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
             <div className="flex items-center gap-2 mt-2">
               <input
                 className="input flex-1 h-8 text-xs"
-                placeholder="New tag name…"
+                placeholder="New EPIC name…"
                 value={newTagName}
                 onChange={e => setNewTagName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddTag()}

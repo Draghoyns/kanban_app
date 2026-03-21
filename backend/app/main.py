@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 
 from .database import engine, Base
-from .routers import tickets, memos, tags, notifications
+from .routers import tickets, memos, tags, notifications, sync
 from .scheduler import setup_scheduler, VAPID_PRIVATE_KEY_FILE, VAPID_PUBLIC_KEY_FILE
 
 logging.basicConfig(level=logging.INFO)
@@ -72,8 +72,8 @@ app = FastAPI(title="Kanban Memo App", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -84,6 +84,7 @@ app.include_router(tags.router, prefix="/api/tags", tags=["tags"])
 app.include_router(
     notifications.router, prefix="/api/notifications", tags=["notifications"]
 )
+app.include_router(sync.router, prefix="/sync", tags=["sync"])
 
 
 @app.get("/api/health")

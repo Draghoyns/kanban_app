@@ -21,3 +21,7 @@ frontend/android/app/build/
 frontend/ios/App/Pods/
 frontend/ios/App/App.xcworkspace/xcuserdata/
 frontend/ios/DerivedData/
+
+# macOS
+.DS_Store
+**/.DS_Store

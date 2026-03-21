@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
+import { useStore } from '@/store/useStore'
 
 const NOTIFICATION_ID = 1
 
 export function useLocalNotifications() {
-  const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { notificationHour, notificationMinute, notificationsEnabled: enabled, setNotificationsEnabled: setEnabled } = useStore()
 
   useEffect(() => {
+    // Sync permission state on mount (native only); on web the store value is canonical.
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
         LocalNotifications.checkPermissions().then(p => setEnabled(p.display === 'granted'))
       }).catch(() => {/* plugin not linked yet */})
-    } else if ('Notification' in window) {
-      setEnabled(Notification.permission === 'granted')
     }
   }, [])
 
@@ -26,21 +26,44 @@ export function useLocalNotifications() {
         const result = await LocalNotifications.requestPermissions()
         if (result.display !== 'granted') return
         setEnabled(true)
-        await scheduleDailyReminder()
-      } else if ('Notification' in window) {
-        const permission = await Notification.requestPermission()
-        setEnabled(permission === 'granted')
+        await scheduleDailyReminder(notificationHour, notificationMinute)
+      } else {
+        // Web: no actual push notifications on non-native platform.
+        // Optionally surface browser permission dialog, but always toggle state.
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => { /* ignore */ })
+        }
+        setEnabled(true)
       }
     } finally {
       setLoading(false)
     }
   }
 
-  return { enabled, loading, enable }
+  async function disable() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { LocalNotifications } = await import('@capacitor/local-notifications')
+        const pending = await LocalNotifications.getPending()
+        if (pending.notifications.length > 0) {
+          await LocalNotifications.cancel({ notifications: pending.notifications })
+        }
+      } catch { /* ignore */ }
+    }
+    setEnabled(false)
+  }
+
+  /** Re-schedule the notification at a new hour+minute (call after user changes the time). */
+  async function reschedule(hour: number, minute: number) {
+    if (!enabled) return
+    await scheduleDailyReminder(hour, minute)
+  }
+
+  return { enabled, loading, enable, disable, reschedule }
 }
 
-/** Schedule (or reschedule) a single repeating 9 am daily reminder. */
-export async function scheduleDailyReminder(): Promise<void> {
+/** Schedule (or reschedule) a single repeating daily reminder at the given hour and minute. */
+export async function scheduleDailyReminder(hour = 9, minute = 0): Promise<void> {
   if (!Capacitor.isNativePlatform()) return
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -52,8 +75,8 @@ export async function scheduleDailyReminder(): Promise<void> {
     }
 
     const at = new Date()
-    at.setHours(9, 0, 0, 0)
-    // If 9 am already passed today, start tomorrow
+    at.setHours(hour, minute, 0, 0)
+    // If the target time already passed today, start tomorrow
     if (at <= new Date()) at.setDate(at.getDate() + 1)
 
     await LocalNotifications.schedule({
@@ -62,7 +85,7 @@ export async function scheduleDailyReminder(): Promise<void> {
         title:     'Kanban Memo',
         body:      'Check your routine tasks for today',
         schedule:  { at, every: 'day', allowWhileIdle: true },
-        iconColor: '#6366f1',
+        iconColor: '#f59e0b',
       }],
     })
   } catch (err) {
