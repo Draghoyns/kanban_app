@@ -3,7 +3,7 @@ import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
   PointerSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
-import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { createPortal } from 'react-dom'
 import { Plus } from 'lucide-react'
 
@@ -12,14 +12,26 @@ import { STATUSES, type Ticket, type TicketStatus } from '@/types'
 import KanbanColumn from './KanbanColumn'
 import TicketCard   from './TicketCard'
 import TicketModal  from './TicketModal'
+import FilterBar, { type ActiveFilters } from './FilterBar'
+
+function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
+  const priorityOk = filters.priorities.length === 0 ||
+    (ticket.priority != null && filters.priorities.includes(ticket.priority))
+  const epicOk = filters.epicIds.length === 0 ||
+    ticket.tags.some(t => filters.epicIds.includes(t.id))
+  return priorityOk && epicOk
+}
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus } = useStore()
+  const { tickets, updateTicketStatus, hideDone } = useStore()
 
-  const [activeTicket, setActiveTicket]     = useState<Ticket | null>(null)
-  const [localTickets, setLocalTickets]     = useState<Ticket[]>([])
-  const [createStatus, setCreateStatus]     = useState<TicketStatus | null>(null)
-  const [editTicket,   setEditTicket]       = useState<Ticket | null>(null)
+  const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
+  const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
+  const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
+  const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
+  const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [] })
+
+  const visibleStatuses = hideDone ? STATUSES.filter(s => s.id !== 'done') : STATUSES
 
   // Use local copy during drag to enable optimistic moves
   const displayed = activeTicket ? localTickets : tickets
@@ -41,9 +53,7 @@ export default function KanbanBoard() {
 
     const overId = String(over.id)
 
-    // Is the target a column header droppable?
     const overStatus = STATUSES.find(s => s.id === overId)
-    // Or another ticket?
     const overTicket = localTickets.find(t => String(t.id) === overId)
 
     const newStatus: TicketStatus | null = overStatus
@@ -60,8 +70,8 @@ export default function KanbanBoard() {
   }
 
   async function handleDragEnd({ active }: DragEndEvent) {
-    const movedId   = Number(active.id)
-    const final     = localTickets.find(t => t.id === movedId)
+    const movedId = Number(active.id)
+    const final   = localTickets.find(t => t.id === movedId)
     setActiveTicket(null)
 
     if (final) {
@@ -73,10 +83,15 @@ export default function KanbanBoard() {
   }
 
   const ticketsByStatus = (status: TicketStatus) =>
-    displayed.filter(t => t.status === status).sort((a, b) => a.position - b.position)
+    displayed
+      .filter(t => t.status === status)
+      .filter(t => ticketMatchesFilter(t, filters))
+      .sort((a, b) => a.position - b.position)
 
   return (
     <>
+      <FilterBar filters={filters} onChange={setFilters} />
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -85,7 +100,7 @@ export default function KanbanBoard() {
         onDragEnd={handleDragEnd}
       >
         <div className="flex gap-4 p-4 overflow-x-auto flex-1 items-start">
-          {STATUSES.map(status => (
+          {visibleStatuses.map(status => (
             <KanbanColumn
               key={status.id}
               status={status}
