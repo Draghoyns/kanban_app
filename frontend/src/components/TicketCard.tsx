@@ -83,7 +83,7 @@ export default function TicketCard({ ticket, onEdit, isDragging }: Props) {
       >
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <p className="text-sm font-medium text-slate-100 leading-snug line-clamp-2">{ticket.title}</p>
+            <p className="text-sm font-medium text-slate-100 leading-snug">{ticket.title}</p>
             <button
               onClick={handleDelete}
               className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all shrink-0 p-0.5"
