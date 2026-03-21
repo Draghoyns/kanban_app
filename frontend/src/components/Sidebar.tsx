@@ -1,10 +1,62 @@
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings } from 'lucide-react'
+import { useState } from 'react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 
+const PALETTE_PRESETS = [
+  { name: 'Pink',    color: '#ec4899' },
+  { name: 'Rose',    color: '#f43f5e' },
+  { name: 'Amber',   color: '#f59e0b' },
+  { name: 'Violet',  color: '#8b5cf6' },
+  { name: 'Sky',     color: '#0ea5e9' },
+  { name: 'Emerald', color: '#10b981' },
+]
+
+interface SectionProps {
+  icon:     React.ReactNode
+  title:    string
+  open:     boolean
+  onToggle: () => void
+  children: React.ReactNode
+}
+
+function Section({ icon, title, open, onToggle, children }: SectionProps) {
+  return (
+    <section>
+      <button
+        onClick={onToggle}
+        className="flex items-center justify-between w-full py-1 mb-1"
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          <h3
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--accent)' }}
+          >
+            {title}
+          </h3>
+        </div>
+        <ChevronDown
+          size={14}
+          className={`text-slate-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && <div className="mt-2">{children}</div>}
+    </section>
+  )
+}
+
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor } = useStore()
   const { enabled, enable, disable } = useLocalNotifications()
+
+  const [open, setOpen] = useState<Record<string, boolean>>({
+    howto:         false,
+    notifications: false,
+    settings:      true,
+    about:         false,
+  })
+  const toggle = (key: string) => setOpen(prev => ({ ...prev, [key]: !prev[key] }))
 
   return (
     <>
@@ -14,8 +66,8 @@ export default function Sidebar() {
         onClick={() => setSidebarOpen(false)}
       />
 
-      {/* Panel */}
-      <aside className="fixed right-0 top-0 h-full w-80 bg-slate-900 border-l border-slate-700 z-50 flex flex-col shadow-2xl animate-fade-in">
+      {/* Panel — left side */}
+      <aside className="fixed left-0 top-0 h-full w-80 bg-slate-900 border-r border-slate-700 z-50 flex flex-col shadow-2xl animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
           <span className="font-semibold text-slate-100">Menu</span>
@@ -27,96 +79,164 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
           {/* ── How to use ───────────────────────────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <BookOpen size={15} className="text-amber-400" />
-              <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">How to use</h3>
-            </div>
+          <Section
+            icon={<BookOpen size={15} style={{ color: 'var(--accent)' }} />}
+            title="How to use"
+            open={open.howto}
+            onToggle={() => toggle('howto')}
+          >
             <ul className="space-y-2 text-xs text-slate-400 leading-relaxed">
-              <li><span className="text-slate-300 font-medium">Create a ticket</span> — tap <span className="text-amber-400">+</span> in any column header or the empty column area.</li>
+              <li><span className="text-slate-300 font-medium">Create a ticket</span> — tap <span style={{ color: 'var(--accent)' }}>+</span> in any column header.</li>
               <li><span className="text-slate-300 font-medium">Edit a ticket</span> — tap anywhere on the card.</li>
-              <li><span className="text-slate-300 font-medium">Move status (web)</span> — drag any card to another column.</li>
-              <li><span className="text-slate-300 font-medium">Move status (mobile)</span> — long-press a card to pick a new status.</li>
-              <li><span className="text-slate-300 font-medium">Filter</span> — use the filter bar below the header to narrow by priority or epic.</li>
-              <li><span className="text-slate-300 font-medium">Epics</span> — coloured labels attached to tickets. Create them in the ticket editor.</li>
-              <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low). Set it in the ticket editor.</li>
-              <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule. Mark a ticket as routine in the editor.</li>
+              <li><span className="text-slate-300 font-medium">Move (web)</span> — drag any card to another column.</li>
+              <li><span className="text-slate-300 font-medium">Move (mobile)</span> — long-press a card to pick a new status.</li>
+              <li><span className="text-slate-300 font-medium">Filter</span> — use the filter bar to narrow by priority, estimate, or epic.</li>
+              <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create them in the ticket editor.</li>
+              <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
+              <li><span className="text-slate-300 font-medium">Estimate</span> — XS (~1h) → XL (16h+).</li>
+              <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
             </ul>
-          </section>
+          </Section>
 
           {/* ── Notifications ────────────────────────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Bell size={15} className="text-amber-400" />
-              <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Notifications</h3>
-            </div>
+          <Section
+            icon={<Bell size={15} style={{ color: 'var(--accent)' }} />}
+            title="Notifications"
+            open={open.notifications}
+            onToggle={() => toggle('notifications')}
+          >
             <p className="text-xs text-slate-400 leading-relaxed mb-3">
-              When enabled, a daily reminder fires every morning at <span className="text-slate-300 font-medium">9:00 AM</span> to check your board.
-              The bell icon in the header toggles notifications on or off at any time.
+              When enabled, a daily reminder fires every morning at <span className="text-slate-300 font-medium">9:00 AM</span>.
+              The bell icon in the header also toggles this.
             </p>
             <button
               onClick={enabled ? disable : enable}
-              className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors
-                ${enabled
-                  ? 'border-amber-600 text-amber-400 bg-amber-950/50 hover:bg-amber-950'
-                  : 'border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-200'}`}
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors"
+              style={enabled
+                ? { borderColor: 'color-mix(in srgb, var(--accent) 70%, black)', color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)' }
+                : { borderColor: '#475569', color: '#94a3b8' }
+              }
             >
               {enabled ? <Bell size={13} /> : <BellOff size={13} />}
               {enabled ? 'Notifications on — tap to disable' : 'Notifications off — tap to enable'}
             </button>
-          </section>
+          </Section>
 
           {/* ── Settings ─────────────────────────────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Settings size={15} className="text-amber-400" />
-              <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Settings</h3>
-            </div>
-
+          <Section
+            icon={<Settings size={15} style={{ color: 'var(--accent)' }} />}
+            title="Settings"
+            open={open.settings}
+            onToggle={() => toggle('settings')}
+          >
             <div className="space-y-2">
               {/* Show/hide Done */}
               <button
                 onClick={() => setHideDone(!hideDone)}
-                className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors group"
+                className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
               >
                 <div className="flex items-center gap-2 text-xs text-slate-300">
-                  {hideDone ? <EyeOff size={13} className="text-amber-400" /> : <Eye size={13} className="text-slate-400" />}
+                  {hideDone
+                    ? <EyeOff size={13} style={{ color: 'var(--accent)' }} />
+                    : <Eye    size={13} className="text-slate-400" />
+                  }
                   {hideDone ? 'Done column hidden' : 'Done column visible'}
                 </div>
-                <div className={`w-8 h-4 rounded-full border transition-colors flex items-center px-0.5 ${hideDone ? 'bg-amber-500 border-amber-500' : 'bg-slate-700 border-slate-600'}`}>
+                <div
+                  className="w-8 h-4 rounded-full flex items-center px-0.5 transition-colors"
+                  style={hideDone
+                    ? { backgroundColor: 'var(--accent)', borderColor: 'var(--accent)' }
+                    : { backgroundColor: '#334155', borderColor: '#475569' }
+                  }
+                >
                   <div className={`w-3 h-3 rounded-full bg-white transition-transform ${hideDone ? 'translate-x-4' : 'translate-x-0'}`} />
                 </div>
               </button>
 
-              {/* Theme */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors group"
-              >
-                <div className="flex items-center gap-2 text-xs text-slate-300">
-                  {theme === 'dark' ? <Moon size={13} className="text-amber-400" /> : <Sun size={13} className="text-amber-400" />}
-                  {theme === 'dark' ? 'Dark theme' : 'Light theme'}
+              {/* Theme — sun/moon icon toggle */}
+              <div className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg border border-slate-700">
+                <span className="text-xs text-slate-300">Theme</span>
+                <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setTheme('light')}
+                    title="Light theme"
+                    className={`p-1.5 rounded-md transition-colors ${
+                      theme === 'light'
+                        ? 'bg-slate-600 text-yellow-300'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    <Sun size={14} />
+                  </button>
+                  <button
+                    onClick={() => setTheme('dark')}
+                    title="Dark theme"
+                    className={`p-1.5 rounded-md transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-slate-700 text-blue-300'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    <Moon size={14} />
+                  </button>
                 </div>
-                <div className={`w-8 h-4 rounded-full border transition-colors flex items-center px-0.5 ${theme === 'light' ? 'bg-amber-500 border-amber-500' : 'bg-slate-700 border-slate-600'}`}>
-                  <div className={`w-3 h-3 rounded-full bg-white transition-transform ${theme === 'light' ? 'translate-x-4' : 'translate-x-0'}`} />
-                </div>
-              </button>
+              </div>
             </div>
-          </section>
+          </Section>
 
-          {/* ── Info ─────────────────────────────────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-2">
-              <Info size={15} className="text-slate-500" />
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">About</h3>
+          {/* ── Appearance ───────────────────────────────────────────── */}
+          <Section
+            icon={<Palette size={15} style={{ color: 'var(--accent)' }} />}
+            title="Appearance"
+            open={open.appearance ?? true}
+            onToggle={() => toggle('appearance')}
+          >
+            <p className="text-xs text-slate-400 mb-3">Accent color</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {PALETTE_PRESETS.map(preset => (
+                <button
+                  key={preset.color}
+                  onClick={() => setAccentColor(preset.color)}
+                  title={preset.name}
+                  style={{
+                    backgroundColor: preset.color,
+                    outline:         accentColor === preset.color ? '2px solid white' : 'none',
+                    outlineOffset:   '2px',
+                  }}
+                  className="w-6 h-6 rounded-full transition-all"
+                />
+              ))}
+              {/* Custom color wheel */}
+              <label
+                title="Custom color"
+                className="w-6 h-6 rounded-full border-2 border-dashed border-slate-600 hover:border-slate-400 flex items-center justify-center cursor-pointer overflow-hidden transition-colors"
+              >
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={e => setAccentColor(e.target.value)}
+                  className="w-8 h-8 opacity-0 absolute cursor-pointer"
+                />
+                <Palette size={12} className="text-slate-500" />
+              </label>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-[10px] text-slate-600 mt-2">{accentColor}</p>
+          </Section>
+
+          {/* ── About ────────────────────────────────────────────────── */}
+          <Section
+            icon={<Info size={15} className="text-slate-500" />}
+            title="About"
+            open={open.about}
+            onToggle={() => toggle('about')}
+          >
+            <p className="text-xs text-slate-500 leading-relaxed">
               Kanban Memo runs fully offline. All data is stored on this device.
             </p>
-          </section>
+          </Section>
         </div>
       </aside>
     </>
