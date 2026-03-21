@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate } from '@/types'
+import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate, EstimationSize } from '@/types'
 
 const genId = () => Date.now() + Math.floor(Math.random() * 1000)
 const now   = () => new Date().toISOString()
@@ -36,12 +36,14 @@ interface AppStore {
   activeTab:   'kanban' | 'memo'
   hideDone:    boolean
   theme:       'dark' | 'light'
+  accentColor: string
   sidebarOpen: boolean
 
-  setActiveTab:   (tab: 'kanban' | 'memo') => void
-  setHideDone:    (v: boolean) => void
-  setTheme:       (theme: 'dark' | 'light') => void
-  setSidebarOpen: (v: boolean) => void
+  setActiveTab:    (tab: 'kanban' | 'memo') => void
+  setHideDone:     (v: boolean) => void
+  setTheme:        (theme: 'dark' | 'light') => void
+  setAccentColor:  (color: string) => void
+  setSidebarOpen:  (v: boolean) => void
 
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
@@ -66,11 +68,13 @@ export const useStore = create<AppStore>()(
       activeTab:   'kanban',
       hideDone:    false,
       theme:       'dark',
+      accentColor: '#ec4899',
       sidebarOpen: false,
 
       setActiveTab:   (tab)   => set({ activeTab:   tab }),
       setHideDone:    (v)     => set({ hideDone:    v }),
       setTheme:       (theme) => set({ theme }),
+      setAccentColor: (c)     => set({ accentColor: c }),
       setSidebarOpen: (v)     => set({ sidebarOpen: v }),
 
       // ── Tickets ──────────────────────────────────────────────────────────
@@ -83,6 +87,7 @@ export const useStore = create<AppStore>()(
           description:        data.description        ?? null,
           status:             data.status             ?? 'backlog',
           priority:           data.priority           ?? null,
+          estimation:         data.estimation         ?? null,
           position:           get().tickets.filter(t => t.status === (data.status ?? 'backlog')).length,
           is_routine:         data.is_routine         ?? false,
           frequency_type:     data.frequency_type     ?? null,
@@ -111,6 +116,7 @@ export const useStore = create<AppStore>()(
               ...(data.description        != null    ? { description: data.description }               : {}),
               ...(data.status             != null    ? { status: data.status }                         : {}),
               ...(data.priority           !== undefined ? { priority: data.priority }                  : {}),
+              ...(data.estimation         !== undefined ? { estimation: data.estimation }              : {}),
               ...(data.position           != null    ? { position: data.position }                     : {}),
               ...(data.is_routine         != null    ? { is_routine: data.is_routine }                 : {}),
               ...(data.frequency_type     !== undefined ? { frequency_type: data.frequency_type }         : {}),
@@ -154,6 +160,7 @@ export const useStore = create<AppStore>()(
           description:        t.description,
           status:             'backlog',
           priority:           t.priority ?? null,
+          estimation:         t.estimation ?? null,
           position:           tickets.filter(x => x.status === 'backlog').length + i,
           is_routine:         false,
           frequency_type:     null,

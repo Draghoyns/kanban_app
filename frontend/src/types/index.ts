@@ -1,6 +1,7 @@
-export type TicketStatus = 'backlog' | 'in_progress' | 'blocked' | 'today' | 'done'
-export type FrequencyType = 'daily' | 'weekly' | 'interval' | 'weekdays'
-export type PriorityLevel = 'P1' | 'P2' | 'P3' | 'P4'
+export type TicketStatus   = 'backlog' | 'in_progress' | 'blocked' | 'today' | 'done'
+export type FrequencyType  = 'daily' | 'weekly' | 'interval' | 'weekdays'
+export type PriorityLevel  = 'P1' | 'P2' | 'P3' | 'P4'
+export type EstimationSize = 'XS' | 'S' | 'M' | 'L' | 'XL'
 
 export interface Tag {
   id:    number
@@ -14,6 +15,7 @@ export interface Ticket {
   description:        string | null
   status:             TicketStatus
   priority:           PriorityLevel | null
+  estimation:         EstimationSize | null
   position:           number
   is_routine:         boolean
   frequency_type:     FrequencyType | null
@@ -42,6 +44,7 @@ export interface TicketCreate {
   description?:        string
   status:              TicketStatus
   priority?:           PriorityLevel | null
+  estimation?:         EstimationSize | null
   is_routine?:         boolean
   frequency_type?:     FrequencyType | null
   frequency_days?:     string[] | null
@@ -54,6 +57,7 @@ export interface TicketUpdate {
   description?:        string
   status?:             TicketStatus
   priority?:           PriorityLevel | null
+  estimation?:         EstimationSize | null
   position?:           number
   is_routine?:         boolean
   frequency_type?:     FrequencyType | null
@@ -113,6 +117,19 @@ export const PRIORITY_LEVELS: {
   { id: 'P2', label: 'P2', color: 'text-orange-400', border: 'border-orange-500', badge: 'bg-orange-950 text-orange-400 border border-orange-900' },
   { id: 'P3', label: 'P3', color: 'text-yellow-400', border: 'border-yellow-500', badge: 'bg-yellow-950 text-yellow-400 border border-yellow-800' },
   { id: 'P4', label: 'P4', color: 'text-slate-400',  border: 'border-slate-600',  badge: 'bg-slate-800 text-slate-400 border border-slate-700'    },
+]
+
+export const ESTIMATION_SIZES: {
+  id:    EstimationSize
+  label: string
+  hours: string
+  badge: string
+}[] = [
+  { id: 'XS', label: 'XS', hours: '~1h',  badge: 'bg-slate-800 text-slate-300 border border-slate-600'    },
+  { id: 'S',  label: 'S',  hours: '~2h',  badge: 'bg-blue-950 text-blue-300 border border-blue-800'       },
+  { id: 'M',  label: 'M',  hours: '~4h',  badge: 'bg-violet-950 text-violet-300 border border-violet-800' },
+  { id: 'L',  label: 'L',  hours: '~8h',  badge: 'bg-orange-950 text-orange-300 border border-orange-800' },
+  { id: 'XL', label: 'XL', hours: '16h+', badge: 'bg-rose-950 text-rose-300 border border-rose-800'       },
 ]
 
 export const MEMO_COLORS = [
