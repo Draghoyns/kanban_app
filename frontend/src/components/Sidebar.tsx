@@ -162,7 +162,8 @@ export default function Sidebar() {
               <li><span className="text-slate-300 font-medium">Edit a ticket</span> — tap anywhere on the card.</li>
               <li><span className="text-slate-300 font-medium">Move (web)</span> — drag any card to another column.</li>
               <li><span className="text-slate-300 font-medium">Move (mobile)</span> — long-press a card to pick a new status.</li>
-              <li><span className="text-slate-300 font-medium">Filter</span> — use the filter bar to narrow by priority, estimate, or EPIC.</li>
+              <li><span className="text-slate-300 font-medium">Filter</span> — tap <em>Filters</em> above the board to expand; filter by priority, estimate, or EPIC.</li>
+              <li><span className="text-slate-300 font-medium">Description</span> — each ticket has three fields: <em>Why</em> (motivation), <em>What</em> (goal), and <em>How</em> (checklist of steps you can tick off).</li>
               <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create or delete them in the EPICs section.</li>
               <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
               <li><span className="text-slate-300 font-medium">Estimate</span> — XS (~1h) → XL (16h+).</li>
