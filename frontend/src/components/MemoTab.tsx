@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Search, StickyNote } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import type { Memo } from '@/types'
@@ -7,12 +7,19 @@ import MemoModal from './MemoModal'
 import TagBadge  from './TagBadge'
 
 export default function MemoTab() {
-  const { memos, tags } = useStore()
+  const { memos, tags, newMemoTrigger } = useStore()
 
   const [showModal,     setShowModal]     = useState(false)
   const [editMemo,      setEditMemo]      = useState<Memo | null>(null)
   const [search,        setSearch]        = useState('')
   const [filterTag,     setFilterTag]     = useState<number | null>(null)
+
+  // Open new-memo modal when shortcut fires (skip first render)
+  const isFirst = useRef(true)
+  useEffect(() => {
+    if (isFirst.current) { isFirst.current = false; return }
+    if (newMemoTrigger > 0) setShowModal(true)
+  }, [newMemoTrigger])
 
   const filtered = memos.filter(m => {
     const matchTag    = filterTag == null || m.tags.some(t => t.id === filterTag)

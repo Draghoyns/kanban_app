@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
   MouseSensor, TouchSensor, useSensor, useSensors, closestCorners,
@@ -42,13 +42,20 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
 }
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus, reorderColumn, hideDone } = useStore()
+  const { tickets, updateTicketStatus, reorderColumn, hideDone, newTicketTrigger } = useStore()
 
   const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
   const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
   const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [], dueDate: null })
+
+  // Open new-ticket modal when shortcut fires (skip first render)
+  const isFirst = useRef(true)
+  useEffect(() => {
+    if (isFirst.current) { isFirst.current = false; return }
+    if (newTicketTrigger > 0) setCreateStatus('backlog')
+  }, [newTicketTrigger])
 
   // Undo toast state
   const [undoTicket, setUndoTicket]     = useState<{ ticket: Ticket; prevStatus: TicketStatus } | null>(null)

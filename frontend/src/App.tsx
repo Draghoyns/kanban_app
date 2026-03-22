@@ -7,10 +7,32 @@ import MemoTab     from '@/components/MemoTab'
 import Sidebar     from '@/components/Sidebar'
 
 export default function App() {
-  const { activeTab, generateRoutineTickets, sidebarOpen, theme, accentColor } = useStore()
+  const { activeTab, generateRoutineTickets, sidebarOpen, theme, accentColor,
+          setActiveTab, triggerNewTicket, triggerNewMemo } = useStore()
 
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
+
+  // Keyboard shortcuts — only fire when no input/textarea/select is focused
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault()
+        setActiveTab('kanban')
+        triggerNewTicket()
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault()
+        setActiveTab('memo')
+        triggerNewMemo()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Notify LiveUpdate plugin that the app loaded successfully (prevents rollback)
   useEffect(() => {

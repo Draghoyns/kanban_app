@@ -42,6 +42,8 @@ interface AppStore {
   notificationsEnabled: boolean
   sidebarOpen:          boolean
   backendUrl:           string
+  newTicketTrigger:     number   // incremented to open new-ticket modal via shortcut
+  newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
 
   setActiveTab:           (tab: 'kanban' | 'memo') => void
   setHideDone:            (v: boolean) => void
@@ -52,7 +54,8 @@ interface AppStore {
   setNotificationsEnabled:(v: boolean) => void
   setSidebarOpen:         (v: boolean) => void
   setBackendUrl:          (url: string) => void
-
+  triggerNewTicket:       () => void
+  triggerNewMemo:         () => void
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
   updateTicketStatus:     (id: number, status: TicketStatus, position?: number) => void
@@ -83,6 +86,8 @@ export const useStore = create<AppStore>()(
       notificationsEnabled: false,
       sidebarOpen:          false,
       backendUrl:           'http://192.168.1.3:8000',
+      newTicketTrigger:     0,
+      newMemoTrigger:       0,
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
       setHideDone:             (v)     => set({ hideDone:             v }),
@@ -92,8 +97,8 @@ export const useStore = create<AppStore>()(
       setNotificationMinute:   (m)     => set({ notificationMinute:   m }),
       setNotificationsEnabled: (v)     => set({ notificationsEnabled: v }),
       setSidebarOpen:          (v)     => set({ sidebarOpen:          v }),
-      setBackendUrl:           (url)   => set({ backendUrl:           url }),
-
+      setBackendUrl:           (url)   => set({ backendUrl:           url }),      triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
+      triggerNewMemo:           ()      => set(s => ({ newMemoTrigger:   s.newMemoTrigger   + 1 })),
       // ── Tickets ──────────────────────────────────────────────────────────
 
       createTicket: (data) => {

@@ -278,7 +278,7 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
 
 ### UX / polish
-- [ ] Keyboard shortcuts (N = new ticket, / = search)
+- [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo (desktop/web only; hints shown in header)
 - [ ] Swipe gestures on mobile to move a ticket between columns
 - [ ] Light/dark mode follows system automatically (currently manual)
 - [ ] Undo last delete (toast with "Undo" button, ~5 s window)
