@@ -42,7 +42,7 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
 }
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus, reorderColumn, hideDone, newTicketTrigger } = useStore()
+  const { tickets, updateTicketStatus, reorderColumn, deleteTicket, hideDone, newTicketTrigger } = useStore()
 
   const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
@@ -58,15 +58,63 @@ export default function KanbanBoard() {
     if (newTicketTrigger > 0) setCreateStatus('backlog')
   }, [newTicketTrigger])
 
-  // Undo toast state
+  // Undo toast state (mark-done)
   const [undoTicket, setUndoTicket]     = useState<{ ticket: Ticket; prevStatus: TicketStatus } | null>(null)
   const undoTimer = useRef<ReturnType<typeof setTimeout>>()
   const [undoProgress, setUndoProgress] = useState(0)
   const progressTimer = useRef<ReturnType<typeof setInterval>>()
 
+  // Pending-delete undo state
+  const [deleteTicketPending, setDeleteTicketPending] = useState<Ticket | null>(null)
+  const deleteTimer        = useRef<ReturnType<typeof setTimeout>>()
+  const deleteProgressTimer = useRef<ReturnType<typeof setInterval>>()
+  const [deleteProgress, setDeleteProgress] = useState(0)
+
+  function handleDeleteTicket(ticket: Ticket) {
+    // If another delete/undo is in flight, immediately commit it
+    if (deleteTicketPending) {
+      clearTimeout(deleteTimer.current)
+      clearInterval(deleteProgressTimer.current)
+      deleteTicket(deleteTicketPending.id)
+    }
+    // Cancel any mark-done undo too (one toast at a time)
+    clearTimeout(undoTimer.current)
+    clearInterval(progressTimer.current)
+    setUndoTicket(null)
+
+    setDeleteTicketPending(ticket)
+    setDeleteProgress(0)
+    const start = Date.now()
+    const DURATION = 5000
+    deleteProgressTimer.current = setInterval(() => {
+      const elapsed = Date.now() - start
+      setDeleteProgress(Math.min(elapsed / DURATION, 1))
+      if (elapsed >= DURATION) clearInterval(deleteProgressTimer.current)
+    }, 50)
+    deleteTimer.current = setTimeout(() => {
+      deleteTicket(ticket.id)
+      setDeleteTicketPending(null)
+      setDeleteProgress(0)
+    }, DURATION)
+  }
+
+  function handleUndoDelete() {
+    clearTimeout(deleteTimer.current)
+    clearInterval(deleteProgressTimer.current)
+    setDeleteTicketPending(null)
+    setDeleteProgress(0)
+  }
+
   function handleMarkDone(ticket: Ticket) {
     const prevStatus = ticket.status
     updateTicketStatus(ticket.id, 'done')
+    // Cancel any pending delete (one toast at a time)
+    if (deleteTicketPending) {
+      clearTimeout(deleteTimer.current)
+      clearInterval(deleteProgressTimer.current)
+      deleteTicket(deleteTicketPending.id)
+      setDeleteTicketPending(null)
+    }
     // Clear any existing undo
     clearTimeout(undoTimer.current)
     clearInterval(progressTimer.current)
@@ -99,7 +147,8 @@ export default function KanbanBoard() {
   const visibleStatuses = hideDone ? STATUSES.filter(s => s.id !== 'done') : STATUSES
 
   // Use local copy during drag to enable optimistic moves
-  const displayed = activeTicket ? localTickets : tickets
+  const displayed = (activeTicket ? localTickets : tickets)
+    .filter(t => t.id !== deleteTicketPending?.id)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -229,6 +278,7 @@ export default function KanbanBoard() {
               onAddTicket={() => setCreateStatus(status.id)}
               onEditTicket={setEditTicket}
               onMarkDone={handleMarkDone}
+              onDeleteTicket={handleDeleteTicket}
             />
           ))}
         </div>
@@ -279,6 +329,30 @@ export default function KanbanBoard() {
             <div
               className="h-full transition-none"
               style={{ width: `${(1 - undoProgress) * 100}%`, backgroundColor: 'var(--accent)' }}
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* Delete undo toast */}
+      {deleteTicketPending && createPortal(
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-72 rounded-xl bg-slate-800 border border-slate-700 shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 gap-3">
+            <span className="text-sm text-slate-300 truncate">
+              Deleted "{deleteTicketPending.title}"
+            </span>
+            <button
+              onClick={handleUndoDelete}
+              className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors"
+              style={{ color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 15%, transparent)' }}
+            >
+              Undo
+            </button>
+          </div>
+          <div className="h-0.5 bg-slate-700">
+            <div
+              className="h-full transition-none"
+              style={{ width: `${(1 - deleteProgress) * 100}%`, backgroundColor: 'var(--accent)' }}
             />
           </div>
         </div>,

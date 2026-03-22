@@ -13,6 +13,7 @@ interface Props {
   onEdit?:     () => void
   isDragging?: boolean
   onMarkDone?: (ticket: Ticket) => void
+  onDelete?:   (ticket: Ticket) => void
 }
 
 /** Extract a plain-text preview from a description (JSON structured or legacy markdown) */
@@ -53,8 +54,8 @@ function dueDateBadge(dueDate: string): { label: string; cls: string } {
   return { label: `${parseInt(d)} ${months[parseInt(m) - 1]}`, cls: 'bg-slate-800 text-slate-400 border-slate-700' }
 }
 
-export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: Props) {
-  const { deleteTicket, updateTicketStatus } = useStore()
+export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onDelete }: Props) {
+  const { updateTicketStatus } = useStore()
   const [showStatusPicker, setShowStatusPicker] = useState(false)
   const longPressTimer = useRef<ReturnType<typeof setTimeout>>()
 
@@ -69,9 +70,7 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    if (window.confirm(`Delete "${ticket.title}"?`)) {
-      await deleteTicket(ticket.id)
-    }
+    onDelete?.(ticket)
   }
 
   // Long-press detection for mobile status picker
