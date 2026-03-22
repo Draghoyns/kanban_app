@@ -95,7 +95,7 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
         onPointerDown={handlePointerDown}
         onPointerUp={cancelLongPress}
         onPointerMove={cancelLongPress}
-        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-pan-y
+        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-manipulation
           ${isDragging ? 'shadow-2xl ring-1 ring-amber-500' : ''}`}
         onClick={showStatusPicker ? undefined : onEdit}
       >
