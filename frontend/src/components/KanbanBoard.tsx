@@ -269,7 +269,7 @@ export default function KanbanBoard() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 min-h-0 overflow-x-auto">
+        <div className="flex-1 min-h-0 overflow-x-auto snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="flex gap-4 p-4 items-stretch h-full">
           {visibleStatuses.map(status => (
             <KanbanColumn
