@@ -13,12 +13,14 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 ### Kanban board
 - **Columns:** Backlog → In Progress → Done
 - **Drag & drop** cards between columns (web); **long-press** a card to pick a new status (mobile)
+- **Drag to reorder** within a column — freely within the same priority group; priority order (P1 → P4) is always enforced
 - **Hide Done** toggle to keep the board clean
-- **Filter bar** — filter by Priority, Estimation, or EPIC
+- **Filter bar** — filter by Priority, Estimation, EPIC, or Due date (Overdue · This week · This month · No due date)
 
 ### Tickets
 - **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
 - **Estimation** — Fibonacci points: 1 · 2 · 3 · 5 · 8
+- **Due date** — pick a date; card badge turns amber (today), red (overdue), yellow (≤7 days), or shows the date
 - **Description** — Markdown editor with live preview
 - **EPICs** — coloured labels; attach multiple EPICs to a ticket
 - **Routines** — tickets that auto-spawn on a daily/weekly/monthly schedule
@@ -245,10 +247,10 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 ## Todo / Ideas
 
 ### Ticket improvements
-- [ ] Due dates with overdue highlighting
-- [ ] Priority levels (low / medium / high / urgent) with visual indicators
+- [x] Due dates with overdue highlighting
+- [x] Filter board by due date (Overdue · This week · This month · No due date)
+- [x] Drag to reorder tickets within a column (within the same priority group — priority order is always preserved)
 - [ ] Sub-tasks / checklist inside a ticket
-- [ ] Drag to reorder tickets within a column
 
 ### Board improvements
 - [ ] Multiple boards (e.g. Work, Personal, Side projects)
@@ -257,7 +259,7 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [ ] Archive column for done tickets instead of deleting
 
 ### EPICs / tags
-- [ ] EPIC progress bar showing % of tickets done
+- [ ] EPIC progress bar showing % of tickets done (opt-in per EPIC at creation time)
 - [ ] Filter board by EPIC (show only tickets belonging to one EPIC)
 
 ### Memos
@@ -270,8 +272,8 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [ ] Daily summary notification (X tickets due today)
 
 ### Sync / data
-- [ ] Export board as JSON (manual backup)
-- [ ] Import from JSON backup
+- [x] Export board as JSON (manual backup)
+- [x] Import from JSON backup
 - [ ] Conflict resolution when syncing from multiple devices
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
 
