@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
-  MouseSensor, TouchSensor, useSensor, useSensors, closestCorners,
+  MouseSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { createPortal } from 'react-dom'
@@ -151,8 +151,7 @@ export default function KanbanBoard() {
     .filter(t => t.id !== deleteTicketPending?.id)
 
   const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } })
   )
 
   function handleDragStart({ active }: DragStartEvent) {
@@ -269,7 +268,7 @@ export default function KanbanBoard() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 min-h-0 overflow-x-auto snap-x snap-mandatory" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 min-h-0 overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="flex gap-4 p-4 items-stretch h-full">
           {visibleStatuses.map(status => (
             <KanbanColumn
