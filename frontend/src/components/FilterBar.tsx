@@ -1,13 +1,23 @@
 import { useState } from 'react'
-import { X, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, ChevronDown, ChevronUp, Calendar } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
+
+export type DueDateFilter = 'overdue' | 'this_week' | 'this_month' | 'no_due_date'
 
 export interface ActiveFilters {
   priorities:  string[]
   epicIds:     number[]
   estimations: string[]
+  dueDate:     DueDateFilter | null
 }
+
+const DUE_DATE_OPTIONS: { id: DueDateFilter; label: string; cls: string; activeCls: string }[] = [
+  { id: 'overdue',      label: 'Overdue',      cls: 'border-slate-700 text-slate-600 hover:border-rose-700 hover:text-rose-400',   activeCls: 'bg-rose-950 text-rose-400 border-rose-800'     },
+  { id: 'this_week',   label: 'This week',    cls: 'border-slate-700 text-slate-600 hover:border-amber-700 hover:text-amber-400', activeCls: 'bg-amber-950 text-amber-400 border-amber-800'   },
+  { id: 'this_month',  label: 'This month',   cls: 'border-slate-700 text-slate-600 hover:border-blue-700 hover:text-blue-400',   activeCls: 'bg-blue-950 text-blue-400 border-blue-800'     },
+  { id: 'no_due_date', label: 'No due date',  cls: 'border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400', activeCls: 'bg-slate-800 text-slate-300 border-slate-600'  },
+]
 
 interface Props {
   filters:  ActiveFilters
@@ -18,7 +28,11 @@ export default function FilterBar({ filters, onChange }: Props) {
   const { tags } = useStore()
   const [open, setOpen] = useState(false)
 
-  const hasFilters = filters.priorities.length > 0 || filters.epicIds.length > 0 || filters.estimations.length > 0
+  const hasFilters = filters.priorities.length > 0 || filters.epicIds.length > 0 || filters.estimations.length > 0 || filters.dueDate != null
+
+  function toggleDueDate(id: DueDateFilter) {
+    onChange({ ...filters, dueDate: filters.dueDate === id ? null : id })
+  }
 
   function togglePriority(id: string) {
     const next = filters.priorities.includes(id)
@@ -42,7 +56,7 @@ export default function FilterBar({ filters, onChange }: Props) {
   }
 
   function clearAll() {
-    onChange({ priorities: [], epicIds: [], estimations: [] })
+    onChange({ priorities: [], epicIds: [], estimations: [], dueDate: null })
   }
 
   return (
@@ -56,7 +70,7 @@ export default function FilterBar({ filters, onChange }: Props) {
           Filters
           {hasFilters && (
             <span className="px-1.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] text-[10px] font-bold">
-              {filters.priorities.length + filters.epicIds.length + filters.estimations.length}
+              {filters.priorities.length + filters.epicIds.length + filters.estimations.length + (filters.dueDate != null ? 1 : 0)}
             </span>
           )}
         </span>
@@ -124,6 +138,23 @@ export default function FilterBar({ filters, onChange }: Props) {
               })}
             </div>
           )}
+
+          {/* Due date */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider w-14 shrink-0 flex items-center gap-1">
+              <Calendar size={10} /> Due
+            </span>
+            {DUE_DATE_OPTIONS.map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => toggleDueDate(opt.id)}
+                className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-all
+                  ${filters.dueDate === opt.id ? opt.activeCls : opt.cls}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
           {/* Clear */}
           {hasFilters && (

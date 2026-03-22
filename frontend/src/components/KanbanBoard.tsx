@@ -3,7 +3,7 @@ import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
   MouseSensor, TouchSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { createPortal } from 'react-dom'
 import { Plus } from 'lucide-react'
 
@@ -21,17 +21,34 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
     ticket.tags.some(t => filters.epicIds.includes(t.id))
   const estimationOk = filters.estimations.length === 0 ||
     (ticket.estimation != null && filters.estimations.includes(ticket.estimation))
-  return priorityOk && epicOk && estimationOk
+
+  let dueDateOk = true
+  if (filters.dueDate === 'no_due_date') {
+    dueDateOk = ticket.due_date == null
+  } else if (filters.dueDate != null && ticket.due_date) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const due = new Date(ticket.due_date + 'T00:00:00')
+    const diff = Math.round((due.getTime() - today.getTime()) / 86_400_000)
+    if (filters.dueDate === 'overdue')    dueDateOk = diff < 0
+    if (filters.dueDate === 'this_week')  dueDateOk = diff >= 0 && diff <= 7
+    if (filters.dueDate === 'this_month') dueDateOk = diff >= 0 && diff <= 31
+  } else if (filters.dueDate != null) {
+    // Ticket has no due date — exclude it when a due-date filter is active
+    dueDateOk = false
+  }
+
+  return priorityOk && epicOk && estimationOk && dueDateOk
 }
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus, hideDone } = useStore()
+  const { tickets, updateTicketStatus, reorderColumn, hideDone } = useStore()
 
   const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
   const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
-  const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [] })
+  const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [], dueDate: null })
 
   // Undo toast state
   const [undoTicket, setUndoTicket]     = useState<{ ticket: Ticket; prevStatus: TicketStatus } | null>(null)
@@ -92,22 +109,44 @@ export default function KanbanBoard() {
   function handleDragOver({ active, over }: DragOverEvent) {
     if (!over || !activeTicket) return
 
-    const overId = String(over.id)
+    const activeId = String(active.id)
+    const overId   = String(over.id)
+    if (activeId === overId) return
 
     const overStatus = STATUSES.find(s => s.id === overId)
     const overTicket = localTickets.find(t => String(t.id) === overId)
 
     const newStatus: TicketStatus | null = overStatus
       ? overStatus.id
-      : overTicket
-        ? overTicket.status
-        : null
+      : overTicket?.status ?? null
 
     if (!newStatus) return
 
-    setLocalTickets(prev =>
-      prev.map(t => String(t.id) === String(active.id) ? { ...t, status: newStatus } : t)
-    )
+    const activeIndex = localTickets.findIndex(t => String(t.id) === activeId)
+    const overIndex   = localTickets.findIndex(t => String(t.id) === overId)
+
+    if (overStatus) {
+      // Dropped on a column header — change status only, place at end
+      setLocalTickets(prev =>
+        prev.map(t => String(t.id) === activeId ? { ...t, status: newStatus } : t)
+      )
+    } else if (overTicket) {
+      if (activeTicket.status === overTicket.status) {
+        // Same column — only reorder within the same priority group
+        if (activeTicket.priority === overTicket.priority) {
+          setLocalTickets(prev => arrayMove(prev, activeIndex, overIndex))
+        }
+      } else {
+        // Cross-column — change status and insert near the over ticket
+        setLocalTickets(prev =>
+          arrayMove(
+            prev.map(t => String(t.id) === activeId ? { ...t, status: newStatus } : t),
+            activeIndex,
+            overIndex,
+          )
+        )
+      }
+    }
   }
 
   async function handleDragEnd({ active }: DragEndEvent) {
@@ -117,8 +156,17 @@ export default function KanbanBoard() {
 
     if (final) {
       const original = tickets.find(t => t.id === movedId)
-      if (original && original.status !== final.status) {
+      if (!original) return
+
+      if (original.status !== final.status) {
+        // Cross-column drop — persist status
         await updateTicketStatus(movedId, final.status)
+      } else {
+        // Same-column drop — persist order only within the same priority group
+        const columnIds = localTickets
+          .filter(t => t.status === final.status && t.priority === final.priority)
+          .map(t => t.id)
+        reorderColumn(columnIds)
       }
     }
   }
