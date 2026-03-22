@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 import { useLiveUpdate } from '@/hooks/useLiveUpdate'
 import TagBadge from '@/components/TagBadge'
 import type { Ticket, Memo, Tag as TagType } from '@/types'
+import { STATUSES } from '@/types'
 
 const PALETTE_PRESETS = [
   { name: 'Pink',    color: '#ec4899' },
@@ -50,7 +51,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl, tickets, memos } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
@@ -321,6 +322,36 @@ export default function Sidebar() {
                   </button>
                 </div>
               </div>
+            </div>
+          </Section>
+
+          {/* ── Board ───────────────────────────────────────────────── */}
+          <Section
+            icon={<Sliders size={15} style={{ color: 'var(--accent)' }} />}
+            title="Board"
+            open={open.board ?? false}
+            onToggle={() => toggle('board')}
+          >
+            <p className="text-xs text-slate-400 leading-relaxed mb-3">
+              Set a WIP (work-in-progress) limit per column. The header turns amber when you exceed the limit.
+            </p>
+            <div className="space-y-2">
+              {STATUSES.filter(s => s.id !== 'done').map(s => (
+                <div key={s.id} className="flex items-center justify-between gap-3">
+                  <span className={`text-xs ${s.color}`}>{s.label}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    placeholder="—"
+                    value={wipLimits[s.id] ?? ''}
+                    onChange={e => {
+                      const v = parseInt(e.target.value, 10)
+                      setWipLimit(s.id, isNaN(v) || v < 1 ? null : v)
+                    }}
+                    className="input w-16 h-7 text-xs text-center"
+                  />
+                </div>
+              ))}
             </div>
           </Section>
 

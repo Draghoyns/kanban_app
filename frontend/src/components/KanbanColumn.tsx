@@ -1,30 +1,47 @@
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { Plus } from 'lucide-react'
+import { Plus, AlertTriangle } from 'lucide-react'
 import type { Ticket, TicketStatus } from '@/types'
-import { STATUSES } from '@/types'
+import { useStore } from '@/store/useStore'
 import TicketCard from './TicketCard'
 
 interface Props {
-  status:       { id: TicketStatus; label: string; color: string; border: string }
-  tickets:      Ticket[]
-  onAddTicket:  () => void
-  onEditTicket: (ticket: Ticket) => void
-  onMarkDone:   (ticket: Ticket) => void
+  status:         { id: TicketStatus; label: string; color: string; border: string }
+  tickets:        Ticket[]
+  onAddTicket:    () => void
+  onEditTicket:   (ticket: Ticket) => void
+  onMarkDone:     (ticket: Ticket) => void
+  onDeleteTicket: (ticket: Ticket) => void
 }
 
-export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicket, onMarkDone }: Props) {
+export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicket, onMarkDone, onDeleteTicket }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status.id })
+  const wipLimits = useStore(s => s.wipLimits)
+  const wipLimit  = wipLimits[status.id]
+  const overWip   = wipLimit != null && tickets.length > wipLimit
 
   return (
     <div className="flex flex-col w-[60vw] shrink-0">
       {/* Column header */}
-      <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} bg-slate-900/60`}>
+      <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} ${overWip ? 'bg-amber-950/40' : 'bg-slate-900/60'}`}>
         <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">
-            {tickets.length}
-          </span>
+          {overWip && (
+            <span className="flex items-center gap-1 text-xs text-amber-400" title={`WIP limit: ${wipLimit}`}>
+              <AlertTriangle size={11} />
+              {tickets.length}/{wipLimit}
+            </span>
+          )}
+          {!overWip && wipLimit != null && (
+            <span className="text-xs text-slate-500" title={`WIP limit: ${wipLimit}`}>
+              {tickets.length}/{wipLimit}
+            </span>
+          )}
+          {wipLimit == null && (
+            <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">
+              {tickets.length}
+            </span>
+          )}
           <button
             onClick={onAddTicket}
             className="text-slate-500 hover:text-slate-200 transition-colors p-0.5 rounded"
@@ -49,6 +66,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
               ticket={ticket}
               onEdit={() => onEditTicket(ticket)}
               onMarkDone={onMarkDone}
+              onDelete={onDeleteTicket}
             />
           ))}
         </SortableContext>

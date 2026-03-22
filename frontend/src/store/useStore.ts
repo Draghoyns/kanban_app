@@ -44,6 +44,7 @@ interface AppStore {
   backendUrl:           string
   newTicketTrigger:     number   // incremented to open new-ticket modal via shortcut
   newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
+  wipLimits:            Partial<Record<TicketStatus, number>>
 
   setActiveTab:           (tab: 'kanban' | 'memo') => void
   setHideDone:            (v: boolean) => void
@@ -54,6 +55,7 @@ interface AppStore {
   setNotificationsEnabled:(v: boolean) => void
   setSidebarOpen:         (v: boolean) => void
   setBackendUrl:          (url: string) => void
+  setWipLimit:            (status: TicketStatus, limit: number | null) => void
   triggerNewTicket:       () => void
   triggerNewMemo:         () => void
   createTicket:           (data: TicketCreate) => Ticket
@@ -88,6 +90,7 @@ export const useStore = create<AppStore>()(
       backendUrl:           'http://192.168.1.3:8000',
       newTicketTrigger:     0,
       newMemoTrigger:       0,
+      wipLimits:            {},
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
       setHideDone:             (v)     => set({ hideDone:             v }),
@@ -97,7 +100,13 @@ export const useStore = create<AppStore>()(
       setNotificationMinute:   (m)     => set({ notificationMinute:   m }),
       setNotificationsEnabled: (v)     => set({ notificationsEnabled: v }),
       setSidebarOpen:          (v)     => set({ sidebarOpen:          v }),
-      setBackendUrl:           (url)   => set({ backendUrl:           url }),      triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
+      setBackendUrl:           (url)   => set({ backendUrl:           url }),
+      setWipLimit:             (status, limit) => set(s => ({
+        wipLimits: limit == null
+          ? Object.fromEntries(Object.entries(s.wipLimits).filter(([k]) => k !== status))
+          : { ...s.wipLimits, [status]: limit },
+      })),
+      triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
       triggerNewMemo:           ()      => set(s => ({ newMemoTrigger:   s.newMemoTrigger   + 1 })),
       // ── Tickets ──────────────────────────────────────────────────────────
 
