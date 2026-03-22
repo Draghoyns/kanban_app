@@ -16,6 +16,7 @@ export interface Ticket {
   status:             TicketStatus
   priority:           PriorityLevel | null
   estimation:         EstimationSize | null
+  due_date:           string | null  // YYYY-MM-DD
   position:           number
   is_routine:         boolean
   frequency_type:     FrequencyType | null
@@ -45,6 +46,7 @@ export interface TicketCreate {
   status:              TicketStatus
   priority?:           PriorityLevel | null
   estimation?:         EstimationSize | null
+  due_date?:           string | null
   is_routine?:         boolean
   frequency_type?:     FrequencyType | null
   frequency_days?:     string[] | null
@@ -58,6 +60,7 @@ export interface TicketUpdate {
   status?:             TicketStatus
   priority?:           PriorityLevel | null
   estimation?:         EstimationSize | null
+  due_date?:           string | null
   position?:           number
   is_routine?:         boolean
   frequency_type?:     FrequencyType | null

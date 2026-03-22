@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Trash2, RefreshCw, GitBranch, CheckCheck } from 'lucide-react'
+import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { STATUSES, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import { useStore } from '@/store/useStore'
@@ -33,6 +33,24 @@ function descPreview(raw: string): string {
     .replace(/^\s*[-*+]\s+/gm, '')
     .replace(/\n+/g, ' ')
     .trim()
+}
+
+/** Compute due date display label and Tailwind classes */
+function dueDateBadge(dueDate: string): { label: string; cls: string } {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate + 'T00:00:00')
+  const diff = Math.round((due.getTime() - today.getTime()) / 86_400_000)
+
+  if (diff < 0)  return { label: `${Math.abs(diff)}d overdue`, cls: 'bg-rose-950 text-rose-400 border-rose-800' }
+  if (diff === 0) return { label: 'Due today',                  cls: 'bg-amber-950 text-amber-400 border-amber-800' }
+  if (diff === 1) return { label: 'Tomorrow',                   cls: 'bg-yellow-950 text-yellow-500 border-yellow-900' }
+  if (diff <= 7)  return { label: `${diff}d left`,              cls: 'bg-yellow-950/50 text-yellow-500/80 border-yellow-900/60' }
+
+  // Format as "25 Mar"
+  const [, m, d] = dueDate.split('-')
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return { label: `${parseInt(d)} ${months[parseInt(m) - 1]}`, cls: 'bg-slate-800 text-slate-400 border-slate-700' }
 }
 
 export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: Props) {
@@ -121,6 +139,15 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
                 {estimation.label}
               </span>
             )}
+            {ticket.due_date && (() => {
+              const { label, cls } = dueDateBadge(ticket.due_date)
+              return (
+                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${cls}`}>
+                  <Calendar size={9} />
+                  {label}
+                </span>
+              )
+            })()}
             {ticket.is_routine && (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">
                 <RefreshCw size={9} />
