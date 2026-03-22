@@ -267,20 +267,24 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [x] Pin important memos to the top
 - [x] Markdown rendering in memo body
 - [ ] Attach a memo to a specific ticket
+- [ ] put EPIC filters below the search bar
 
 ### Notifications
 - [ ] Per-ticket reminders (remind me on due date)
 - [ ] Daily summary notification (X tickets due today)
+- [ ] **FIX notifications on the phone app**
+- [ ] remove notifications button on the sidebar -> only the bell icon in the main board
 
 ### Sync / data
 - [x] Export board as JSON (manual backup)
 - [x] Import from JSON backup
 - [ ] Conflict resolution when syncing from multiple devices
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
+- [ ] add a version picker -> name every change based on the importance (minor change = minor version, major behavior change = major version update)
 
 ### UX / polish
 - [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo, `/` = search (desktop/web only; hints shown in header)
-- [ ] Swipe gestures on mobile to move a ticket between columns
+- [x] Swipe gestures on mobile — scroll horizontally between columns, vertically within a column; long-press a card to change its status
 - [ ] Light/dark mode follows system automatically (currently manual)
 - [x] Undo last delete (toast with "Undo" button, ~5 s window)
 
