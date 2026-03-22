@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Trash2, RefreshCw, GitBranch, CheckCheck } from 'lucide-react'
+import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { STATUSES, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import { useStore } from '@/store/useStore'
@@ -13,6 +13,7 @@ interface Props {
   onEdit?:     () => void
   isDragging?: boolean
   onMarkDone?: (ticket: Ticket) => void
+  onDelete?:   (ticket: Ticket) => void
 }
 
 /** Extract a plain-text preview from a description (JSON structured or legacy markdown) */
@@ -35,8 +36,26 @@ function descPreview(raw: string): string {
     .trim()
 }
 
-export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: Props) {
-  const { deleteTicket, updateTicketStatus } = useStore()
+/** Compute due date display label and Tailwind classes */
+function dueDateBadge(dueDate: string): { label: string; cls: string } {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const due = new Date(dueDate + 'T00:00:00')
+  const diff = Math.round((due.getTime() - today.getTime()) / 86_400_000)
+
+  if (diff < 0)  return { label: `${Math.abs(diff)}d overdue`, cls: 'bg-rose-950 text-rose-400 border-rose-800' }
+  if (diff === 0) return { label: 'Due today',                  cls: 'bg-amber-950 text-amber-400 border-amber-800' }
+  if (diff === 1) return { label: 'Tomorrow',                   cls: 'bg-yellow-950 text-yellow-500 border-yellow-900' }
+  if (diff <= 7)  return { label: `${diff}d left`,              cls: 'bg-yellow-950/50 text-yellow-500/80 border-yellow-900/60' }
+
+  // Format as "25 Mar"
+  const [, m, d] = dueDate.split('-')
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return { label: `${parseInt(d)} ${months[parseInt(m) - 1]}`, cls: 'bg-slate-800 text-slate-400 border-slate-700' }
+}
+
+export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onDelete }: Props) {
+  const { updateTicketStatus } = useStore()
   const [showStatusPicker, setShowStatusPicker] = useState(false)
   const longPressTimer = useRef<ReturnType<typeof setTimeout>>()
 
@@ -51,9 +70,7 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    if (window.confirm(`Delete "${ticket.title}"?`)) {
-      await deleteTicket(ticket.id)
-    }
+    onDelete?.(ticket)
   }
 
   // Long-press detection for mobile status picker
@@ -78,7 +95,7 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
         onPointerDown={handlePointerDown}
         onPointerUp={cancelLongPress}
         onPointerMove={cancelLongPress}
-        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-pan-x
+        className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-manipulation
           ${isDragging ? 'shadow-2xl ring-1 ring-amber-500' : ''}`}
         onClick={showStatusPicker ? undefined : onEdit}
       >
@@ -121,6 +138,15 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone }: P
                 {estimation.label}
               </span>
             )}
+            {ticket.due_date && (() => {
+              const { label, cls } = dueDateBadge(ticket.due_date)
+              return (
+                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${cls}`}>
+                  <Calendar size={9} />
+                  {label}
+                </span>
+              )
+            })()}
             {ticket.is_routine && (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">
                 <RefreshCw size={9} />

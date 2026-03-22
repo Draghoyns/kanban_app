@@ -49,7 +49,14 @@ export default function Header() {
         ))}
       </nav>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-2">
+        {/* Keyboard shortcut hints — hidden on mobile */}
+        <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-600 font-mono select-none">
+          <span title="New ticket"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">N</kbd> ticket</span>
+          <span title="New memo"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">M</kbd> memo</span>
+          <span title="Search tickets"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">/</kbd> search</span>
+        </div>
+
         <button
           onClick={enabled ? disable : enable}
           disabled={loading}

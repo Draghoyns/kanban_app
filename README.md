@@ -13,12 +13,15 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 ### Kanban board
 - **Columns:** Backlog → In Progress → Done
 - **Drag & drop** cards between columns (web); **long-press** a card to pick a new status (mobile)
+- **Drag to reorder** within a column — freely within the same priority group; priority order (P1 → P4) is always enforced
 - **Hide Done** toggle to keep the board clean
-- **Filter bar** — filter by Priority, Estimation, or EPIC
+- **Filter bar** — filter by Priority, Estimation, EPIC, or Due date (Overdue · This week · This month · No due date)
+- **Search** — keyword search across all columns (title, Why, What, How); press `/` to focus
 
 ### Tickets
 - **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
 - **Estimation** — Fibonacci points: 1 · 2 · 3 · 5 · 8
+- **Due date** — pick a date; card badge turns amber (today), red (overdue), yellow (≤7 days), or shows the date
 - **Description** — Markdown editor with live preview
 - **EPICs** — coloured labels; attach multiple EPICs to a ticket
 - **Routines** — tickets that auto-spawn on a daily/weekly/monthly schedule
@@ -245,41 +248,45 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 ## Todo / Ideas
 
 ### Ticket improvements
-- [ ] Due dates with overdue highlighting
-- [ ] Priority levels (low / medium / high / urgent) with visual indicators
-- [ ] Sub-tasks / checklist inside a ticket
-- [ ] Drag to reorder tickets within a column
+- [x] Due dates with overdue highlighting
+- [x] Filter board by due date (Overdue · This week · This month · No due date)
+- [x] Drag to reorder tickets within a column (within the same priority group — priority order is always preserved)
+- [x] Sub-tasks / checklist inside a ticket
 
 ### Board improvements
 - [ ] Multiple boards (e.g. Work, Personal, Side projects)
 - [ ] Custom columns (rename, add, delete, reorder)
-- [ ] WIP limits per column with visual warning when exceeded
+- [x] WIP limits per column with visual warning when exceeded
 - [ ] Archive column for done tickets instead of deleting
 
 ### EPICs / tags
-- [ ] EPIC progress bar showing % of tickets done
-- [ ] Filter board by EPIC (show only tickets belonging to one EPIC)
+- [ ] EPIC progress bar showing % of tickets done (opt-in per EPIC at creation time)
+- [x] Filter board by EPIC (show only tickets belonging to one EPIC)
 
 ### Memos
-- [ ] Pin important memos to the top
-- [ ] Markdown rendering in memo body
+- [x] Pin important memos to the top
+- [x] Markdown rendering in memo body
 - [ ] Attach a memo to a specific ticket
+- [ ] put EPIC filters below the search bar
 
 ### Notifications
 - [ ] Per-ticket reminders (remind me on due date)
 - [ ] Daily summary notification (X tickets due today)
+- [ ] **FIX notifications on the phone app**
+- [ ] remove notifications button on the sidebar -> only the bell icon in the main board
 
 ### Sync / data
-- [ ] Export board as JSON (manual backup)
-- [ ] Import from JSON backup
+- [x] Export board as JSON (manual backup)
+- [x] Import from JSON backup
 - [ ] Conflict resolution when syncing from multiple devices
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
+- [ ] add a version picker -> name every change based on the importance (minor change = minor version, major behavior change = major version update)
 
 ### UX / polish
-- [ ] Keyboard shortcuts (N = new ticket, / = search)
-- [ ] Swipe gestures on mobile to move a ticket between columns
+- [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo, `/` = search (desktop/web only; hints shown in header)
+- [x] Swipe gestures on mobile — scroll horizontally between columns, vertically within a column; long-press a card to change its status
 - [ ] Light/dark mode follows system automatically (currently manual)
-- [ ] Undo last delete (toast with "Undo" button, ~5 s window)
+- [x] Undo last delete (toast with "Undo" button, ~5 s window)
 
 ---
 

@@ -51,6 +51,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
   const [status,         setStatus]         = useState<TicketStatus>(ticket?.status ?? initialStatus)
   const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
   const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
+  const [dueDate,        setDueDate]        = useState<string>(ticket?.due_date ?? '')
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
   const [newTagColor,    setNewTagColor]    = useState('#ec4899')
@@ -166,6 +167,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
       status,
       priority,
       estimation,
+      due_date:    dueDate.trim() || null,
       tag_ids:     selectedTagIds,
       ...routineFields,
     }
@@ -241,6 +243,27 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
               {estimation && (
                 <button
                   onClick={() => setEstimation(null)}
+                  className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Due date */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1.5 block">Due date</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                className="input text-sm h-8 w-40"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+              />
+              {dueDate && (
+                <button
+                  onClick={() => setDueDate('')}
                   className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
                 >
                   Clear

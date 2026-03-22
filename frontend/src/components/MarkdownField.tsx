@@ -49,6 +49,8 @@ function inline(text: string): React.ReactNode {
   })
 }
 
+export { renderMarkdown }
+
 export default function MarkdownField({ label, value, onChange, rows = 4, placeholder }: Props) {
   const [preview, setPreview] = useState(false)
 

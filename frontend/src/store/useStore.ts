@@ -42,6 +42,9 @@ interface AppStore {
   notificationsEnabled: boolean
   sidebarOpen:          boolean
   backendUrl:           string
+  newTicketTrigger:     number   // incremented to open new-ticket modal via shortcut
+  newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
+  wipLimits:            Partial<Record<TicketStatus, number>>
 
   setActiveTab:           (tab: 'kanban' | 'memo') => void
   setHideDone:            (v: boolean) => void
@@ -52,10 +55,13 @@ interface AppStore {
   setNotificationsEnabled:(v: boolean) => void
   setSidebarOpen:         (v: boolean) => void
   setBackendUrl:          (url: string) => void
-
+  setWipLimit:            (status: TicketStatus, limit: number | null) => void
+  triggerNewTicket:       () => void
+  triggerNewMemo:         () => void
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
   updateTicketStatus:     (id: number, status: TicketStatus, position?: number) => void
+  reorderColumn:          (orderedIds: number[]) => void
   deleteTicket:           (id: number) => void
   generateRoutineTickets: () => Ticket[]    // returns newly created instances
 
@@ -82,6 +88,9 @@ export const useStore = create<AppStore>()(
       notificationsEnabled: false,
       sidebarOpen:          false,
       backendUrl:           'http://192.168.1.3:8000',
+      newTicketTrigger:     0,
+      newMemoTrigger:       0,
+      wipLimits:            {},
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
       setHideDone:             (v)     => set({ hideDone:             v }),
@@ -92,7 +101,13 @@ export const useStore = create<AppStore>()(
       setNotificationsEnabled: (v)     => set({ notificationsEnabled: v }),
       setSidebarOpen:          (v)     => set({ sidebarOpen:          v }),
       setBackendUrl:           (url)   => set({ backendUrl:           url }),
-
+      setWipLimit:             (status, limit) => set(s => ({
+        wipLimits: limit == null
+          ? Object.fromEntries(Object.entries(s.wipLimits).filter(([k]) => k !== status))
+          : { ...s.wipLimits, [status]: limit },
+      })),
+      triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
+      triggerNewMemo:           ()      => set(s => ({ newMemoTrigger:   s.newMemoTrigger   + 1 })),
       // ── Tickets ──────────────────────────────────────────────────────────
 
       createTicket: (data) => {
@@ -104,6 +119,7 @@ export const useStore = create<AppStore>()(
           status:             data.status             ?? 'backlog',
           priority:           data.priority           ?? null,
           estimation:         data.estimation         ?? null,
+          due_date:           data.due_date           ?? null,
           position:           get().tickets.filter(t => t.status === (data.status ?? 'backlog')).length,
           is_routine:         data.is_routine         ?? false,
           frequency_type:     data.frequency_type     ?? null,
@@ -133,6 +149,7 @@ export const useStore = create<AppStore>()(
               ...(data.status             != null    ? { status: data.status }                         : {}),
               ...(data.priority           !== undefined ? { priority: data.priority }                  : {}),
               ...(data.estimation         !== undefined ? { estimation: data.estimation }              : {}),
+              ...(data.due_date           !== undefined ? { due_date: data.due_date }                  : {}),
               ...(data.position           != null    ? { position: data.position }                     : {}),
               ...(data.is_routine         != null    ? { is_routine: data.is_routine }                 : {}),
               ...(data.frequency_type     !== undefined ? { frequency_type: data.frequency_type }         : {}),
@@ -159,6 +176,15 @@ export const useStore = create<AppStore>()(
         set(s => ({ tickets: s.tickets.filter(t => t.id !== id) }))
       },
 
+      reorderColumn: (orderedIds) => {
+        set(s => ({
+          tickets: s.tickets.map(t => {
+            const idx = orderedIds.indexOf(t.id)
+            return idx !== -1 ? { ...t, position: idx, updated_at: now() } : t
+          }),
+        }))
+      },
+
       // Spawns a backlog instance for every overdue routine template.
       // Safe to call every app launch — idempotent within a single calendar day.
       generateRoutineTickets: () => {
@@ -177,6 +203,7 @@ export const useStore = create<AppStore>()(
           status:             'backlog',
           priority:           t.priority ?? null,
           estimation:         t.estimation ?? null,
+          due_date:           null,
           position:           tickets.filter(x => x.status === 'backlog').length + i,
           is_routine:         false,
           frequency_type:     null,
@@ -258,7 +285,24 @@ export const useStore = create<AppStore>()(
         }))
       },
     }),
-    { name: 'kanban-store' }
+    {
+      name: 'kanban-store',
+      partialize: (s) => ({
+        tickets:              s.tickets,
+        memos:                s.memos,
+        tags:                 s.tags,
+        activeTab:            s.activeTab,
+        hideDone:             s.hideDone,
+        theme:                s.theme,
+        accentColor:          s.accentColor,
+        notificationHour:     s.notificationHour,
+        notificationMinute:   s.notificationMinute,
+        notificationsEnabled: s.notificationsEnabled,
+        backendUrl:           s.backendUrl,
+        wipLimits:            s.wipLimits,
+        // sidebarOpen, newTicketTrigger, newMemoTrigger intentionally excluded
+      }),
+    }
   )
 )
 
