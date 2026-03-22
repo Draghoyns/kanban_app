@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate, EstimationSize } from '@/types'
+import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoCreate, MemoUpdate, TagCreate } from '@/types'
 
 const genId = () => Date.now() + Math.floor(Math.random() * 1000)
 const now   = () => new Date().toISOString()

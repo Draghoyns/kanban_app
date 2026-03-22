@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { X, ChevronDown, ChevronUp, Calendar, Search } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
@@ -29,7 +29,6 @@ interface Props {
 export default function FilterBar({ filters, onChange, search, onSearch }: Props) {
   const { tags } = useStore()
   const [open, setOpen] = useState(false)
-  const searchRef = useRef<HTMLInputElement>(null)
 
   const hasFilters = filters.priorities.length > 0 || filters.epicIds.length > 0 || filters.estimations.length > 0 || filters.dueDate != null
 
@@ -70,7 +69,6 @@ export default function FilterBar({ filters, onChange, search, onSearch }: Props
         <div className="relative flex-1 max-w-xs">
           <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           <input
-            ref={searchRef}
             id="board-search"
             className="input h-7 pl-7 pr-7 text-xs w-full"
             placeholder="Search tickets…"

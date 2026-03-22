@@ -1,5 +1,7 @@
 # Kanban Memo App
 
+> **Phone-first app.** Designed primarily for iOS and Android via Capacitor. The web build works but the phone experience is the priority.
+
 A personal Kanban board + memo pad that runs **completely offline** — no internet, no cloud, no accounts.
 
 - Install it once on your phone via USB
@@ -287,6 +289,7 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [x] Swipe gestures on mobile — scroll horizontally between columns, vertically within a column; long-press a card to change its status
 - [ ] Light/dark mode follows system automatically (currently manual)
 - [x] Undo last delete (toast with "Undo" button, ~5 s window)
+- [] zoom out the phone icon to be able to see the whole cherry
 
 ---
 

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 import { useLiveUpdate } from '@/hooks/useLiveUpdate'
@@ -14,6 +14,16 @@ const PALETTE_PRESETS = [
   { name: 'Violet',  color: '#8b5cf6' },
   { name: 'Sky',     color: '#0ea5e9' },
   { name: 'Emerald', color: '#10b981' },
+]
+
+const EPIC_COLOR_PRESETS = [
+  ...PALETTE_PRESETS,
+  { name: 'Orange',  color: '#ea580c' },
+  { name: 'Lime',    color: '#84cc16' },
+  { name: 'Cyan',    color: '#06b6d4' },
+  { name: 'Red',     color: '#dc2626' },
+  { name: 'Indigo',  color: '#4f46e5' },
+  { name: 'White',   color: '#f1f5f9' },
 ]
 
 interface SectionProps {
@@ -56,18 +66,40 @@ export default function Sidebar() {
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
   const importRef = useRef<HTMLInputElement>(null)
-  const [importError, setImportError] = useState<string | null>(null)
-  const [importOk,    setImportOk]    = useState(false)
+  const [importError,    setImportError]    = useState<string | null>(null)
+  const [importOk,       setImportOk]       = useState(false)
+  const [exportLoading,  setExportLoading]  = useState(false)
+  const [exportDone,     setExportDone]     = useState(false)
 
-  function handleExport() {
+  async function handleExport() {
+    if (exportLoading) return
+    setExportLoading(true)
+    setExportDone(false)
     const payload = { version: 1, exportedAt: new Date().toISOString(), tickets, memos, tags }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href     = url
-    a.download = `kanban-backup-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    const json     = JSON.stringify(payload, null, 2)
+    const filename = `kanban-backup-${new Date().toISOString().slice(0, 10)}.json`
+    const file     = new File([json], filename, { type: 'application/json' })
+
+    try {
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Kanban Backup' })
+      } else {
+        const url = URL.createObjectURL(file)
+        const a   = document.createElement('a')
+        a.href     = url
+        a.download = filename
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+      setExportDone(true)
+      setTimeout(() => setExportDone(false), 2500)
+    } catch (err) {
+      if (!(err instanceof Error && err.name === 'AbortError')) {
+        setImportError('Export failed: ' + (err instanceof Error ? err.message : String(err)))
+      }
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -110,9 +142,14 @@ export default function Sidebar() {
   }
 
   const [open, setOpen] = useState<Record<string, boolean>>({
+    sync:          false,
     howto:         false,
     notifications: false,
     settings:      true,
+    board:         false,
+    appearance:    true,
+    epics:         true,
+    data:          false,
     about:         false,
   })
   const toggle = (key: string) => setOpen(prev => ({ ...prev, [key]: !prev[key] }))
@@ -420,6 +457,20 @@ export default function Sidebar() {
               </ul>
             )}
             {/* Create EPIC */}
+            <div className="flex flex-wrap gap-1 mb-1">
+              {EPIC_COLOR_PRESETS.map(p => (
+                <button
+                  key={p.color}
+                  title={p.name}
+                  onClick={() => setNewEpicColor(p.color)}
+                  className="w-4 h-4 rounded-full border-2 transition-transform hover:scale-110"
+                  style={{
+                    backgroundColor: p.color,
+                    borderColor: newEpicColor === p.color ? 'white' : 'transparent',
+                  }}
+                />
+              ))}
+            </div>
             <div className="flex items-center gap-2">
               <input
                 className="input flex-1 h-8 text-xs"
@@ -458,9 +509,15 @@ export default function Sidebar() {
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors"
+                disabled={exportLoading}
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors disabled:opacity-60"
               >
-                <Download size={13} /> Export backup
+                {exportLoading
+                  ? <><Loader2 size={13} className="animate-spin" /> Exporting…</>
+                  : exportDone
+                  ? <><CheckCircle size={13} className="text-emerald-400" /> <span className="text-emerald-400">Saved!</span></>
+                  : <><Download size={13} /> Export backup</>
+                }
               </button>
               <button
                 onClick={() => { setImportError(null); setImportOk(false); importRef.current?.click() }}

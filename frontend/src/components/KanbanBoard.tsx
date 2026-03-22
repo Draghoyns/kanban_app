@@ -14,6 +14,8 @@ import TicketCard   from './TicketCard'
 import TicketModal  from './TicketModal'
 import FilterBar, { type ActiveFilters } from './FilterBar'
 
+const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
+
 function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
   const priorityOk = filters.priorities.length === 0 ||
     (ticket.priority != null && filters.priorities.includes(ticket.priority))
@@ -51,10 +53,8 @@ export default function KanbanBoard() {
   const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [], dueDate: null })
   const [search,       setSearch]         = useState('')
 
-  // Open new-ticket modal when shortcut fires (skip first render)
-  const isFirst = useRef(true)
+  // Open new-ticket modal when shortcut fires
   useEffect(() => {
-    if (isFirst.current) { isFirst.current = false; return }
     if (newTicketTrigger > 0) setCreateStatus('backlog')
   }, [newTicketTrigger])
 
@@ -206,7 +206,7 @@ export default function KanbanBoard() {
     }
   }
 
-  async function handleDragEnd({ active }: DragEndEvent) {
+  function handleDragEnd({ active }: DragEndEvent) {
     const movedId = Number(active.id)
     const final   = localTickets.find(t => t.id === movedId)
     setActiveTicket(null)
@@ -216,10 +216,8 @@ export default function KanbanBoard() {
       if (!original) return
 
       if (original.status !== final.status) {
-        // Cross-column drop — persist status
-        await updateTicketStatus(movedId, final.status)
+        updateTicketStatus(movedId, final.status)
       } else {
-        // Same-column drop — persist order only within the same priority group
         const columnIds = localTickets
           .filter(t => t.status === final.status && t.priority === final.priority)
           .map(t => t.id)
@@ -227,8 +225,6 @@ export default function KanbanBoard() {
       }
     }
   }
-
-  const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
   const ticketsByStatus = (status: TicketStatus) => {
     const q = search.trim().toLowerCase()

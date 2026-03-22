@@ -21,7 +21,6 @@ export default function MemoModal({ memo, onClose }: Props) {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(memo?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
   const [newTagColor,    setNewTagColor]    = useState('#6366f1')
-  const [saving,         setSaving]         = useState(false)
   const [error,          setError]          = useState('')
 
   useEffect(() => {
@@ -31,38 +30,28 @@ export default function MemoModal({ memo, onClose }: Props) {
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  })
+  }, [])
 
   function toggleTag(id: number) {
     setSelectedTagIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
-  async function handleAddTag() {
+  function handleAddTag() {
     if (!newTagName.trim()) return
-    try {
-      const tag = await createTag({ name: newTagName.trim(), color: newTagColor })
-      setSelectedTagIds(prev => [...prev, tag.id])
-      setNewTagName('')
-    } catch { setError('Tag name already exists') }
+    const tag = createTag({ name: newTagName.trim(), color: newTagColor })
+    setSelectedTagIds(prev => [...prev, tag.id])
+    setNewTagName('')
   }
 
-  async function handleSave() {
+  function handleSave() {
     if (!title.trim()) { setError('Title is required'); return }
-    setSaving(true)
-    setError('')
-    try {
-      const payload = { title: title.trim(), content: content.trim() || undefined, color, pinned, tag_ids: selectedTagIds }
-      if (memo) {
-        await updateMemo(memo.id, payload)
-      } else {
-        await createMemo(payload)
-      }
-      onClose()
-    } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Failed to save memo')
-    } finally {
-      setSaving(false)
+    const payload = { title: title.trim(), content: content.trim() || undefined, color, pinned, tag_ids: selectedTagIds }
+    if (memo) {
+      updateMemo(memo.id, payload)
+    } else {
+      createMemo(payload)
     }
+    onClose()
   }
 
   return (
@@ -151,8 +140,8 @@ export default function MemoModal({ memo, onClose }: Props) {
 
         <div className="flex justify-end gap-2 px-5 py-4 border-t border-slate-700">
           <button onClick={onClose} className="btn-ghost">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="btn-primary">
-            {saving ? 'Saving…' : memo ? 'Save changes' : 'Create memo'}
+          <button onClick={handleSave} className="btn-primary">
+            {memo ? 'Save changes' : 'Create memo'}
           </button>
         </div>
       </div>

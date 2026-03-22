@@ -25,6 +25,14 @@ export function useLocalNotifications() {
         const { LocalNotifications } = await import('@capacitor/local-notifications')
         const result = await LocalNotifications.requestPermissions()
         if (result.display !== 'granted') return
+        // Android 12+: check exact alarm permission; if not granted, open system settings
+        try {
+          const result2 = await LocalNotifications.checkExactNotificationSetting()
+          if (result2.exact_alarm !== 'granted') {
+            await LocalNotifications.changeExactNotificationSetting()
+            return // user must re-tap enable after granting in settings
+          }
+        } catch { /* plugin doesn't support this on older Android — proceed */ }
         setEnabled(true)
         await scheduleDailyReminder(notificationHour, notificationMinute)
       } else {

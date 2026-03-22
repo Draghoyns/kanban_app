@@ -11,27 +11,30 @@ interface Props {
 }
 
 export default function MemoCard({ memo, onEdit }: Props) {
-  const { updateMemo, deleteMemo } = useStore()
-  const [deleting, setDeleting]   = useState(false)
+  const { updateMemo, deleteMemo, theme } = useStore()
+  const [deleting, setDeleting]           = useState(false)
+  const bgColor = theme === 'light'
+    ? `color-mix(in srgb, ${memo.color} 25%, white)`
+    : memo.color
 
-  async function handleDelete(e: React.MouseEvent) {
+  function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
     if (window.confirm(`Delete "${memo.title}"?`)) {
       setDeleting(true)
-      await deleteMemo(memo.id)
+      deleteMemo(memo.id)
     }
   }
 
-  async function handlePin(e: React.MouseEvent) {
+  function handlePin(e: React.MouseEvent) {
     e.stopPropagation()
-    await updateMemo(memo.id, { pinned: !memo.pinned })
+    updateMemo(memo.id, { pinned: !memo.pinned })
   }
 
   return (
     <div
       className="group relative rounded-xl border border-slate-700 hover:border-slate-600 p-4 cursor-pointer
                  transition-all flex flex-col gap-2"
-      style={{ backgroundColor: memo.color }}
+      style={{ backgroundColor: bgColor }}
       onClick={onEdit}
     >
       {/* Actions */}

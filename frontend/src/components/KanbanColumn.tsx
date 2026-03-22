@@ -17,8 +17,9 @@ interface Props {
 export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicket, onMarkDone, onDeleteTicket }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status.id })
   const wipLimits = useStore(s => s.wipLimits)
-  const wipLimit  = wipLimits[status.id]
-  const overWip   = wipLimit != null && tickets.length > wipLimit
+  const wipLimit        = wipLimits[status.id]
+  const nonRoutineCount = tickets.filter(t => !t.is_routine).length
+  const overWip         = wipLimit != null && nonRoutineCount > wipLimit
 
   return (
     <div className="flex flex-col w-[80vw] md:w-[360px] shrink-0 min-h-0">
@@ -29,12 +30,12 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
           {overWip && (
             <span className="flex items-center gap-1 text-xs text-amber-400" title={`WIP limit: ${wipLimit}`}>
               <AlertTriangle size={11} />
-              {tickets.length}/{wipLimit}
+              {nonRoutineCount}/{wipLimit}
             </span>
           )}
           {!overWip && wipLimit != null && (
             <span className="text-xs text-slate-500" title={`WIP limit: ${wipLimit}`}>
-              {tickets.length}/{wipLimit}
+              {nonRoutineCount}/{wipLimit}
             </span>
           )}
           {wipLimit == null && (

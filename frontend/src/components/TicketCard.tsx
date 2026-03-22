@@ -1,11 +1,8 @@
-import { useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar } from 'lucide-react'
 import type { Ticket } from '@/types'
-import { STATUSES, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
-import { useStore } from '@/store/useStore'
+import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import TagBadge from './TagBadge'
 
 interface Props {
@@ -55,10 +52,6 @@ function dueDateBadge(dueDate: string): { label: string; cls: string } {
 }
 
 export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onDelete }: Props) {
-  const { updateTicketStatus } = useStore()
-  const [showStatusPicker, setShowStatusPicker] = useState(false)
-  const longPressTimer = useRef<ReturnType<typeof setTimeout>>()
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortDragging } =
     useSortable({ id: String(ticket.id) })
 
@@ -68,36 +61,23 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
     opacity:    isSortDragging ? 0.4 : 1,
   }
 
-  async function handleDelete(e: React.MouseEvent) {
+  function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
     onDelete?.(ticket)
   }
-
-  // Long-press detection for mobile status picker
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Forward event to dnd-kit so dragging still works
-    if (listeners?.onPointerDown) (listeners.onPointerDown as Function)(e)
-    longPressTimer.current = setTimeout(() => setShowStatusPicker(true), 600)
-  }
-
-  const cancelLongPress = () => clearTimeout(longPressTimer.current)
 
   const priority   = ticket.priority   ? PRIORITY_LEVELS.find(p  => p.id  === ticket.priority)   : null
   const estimation = ticket.estimation ? ESTIMATION_SIZES.find(e => e.id === ticket.estimation) : null
 
   return (
-    <>
       <div
         ref={setNodeRef}
         style={style}
         {...attributes}
         {...listeners}
-        onPointerDown={handlePointerDown}
-        onPointerUp={cancelLongPress}
-        onPointerMove={cancelLongPress}
         className={`card p-3 cursor-pointer group hover:border-slate-600 transition-all select-none touch-manipulation
           ${isDragging ? 'shadow-2xl ring-1 ring-amber-500' : ''}`}
-        onClick={showStatusPicker ? undefined : onEdit}
+        onClick={onEdit}
       >
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
@@ -165,38 +145,6 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
           </div>
         </div>
       </div>
-
-      {/* Long-press status picker */}
-      {showStatusPicker && createPortal(
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setShowStatusPicker(false)}
-        >
-          <div
-            className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-3 min-w-44 animate-fade-in"
-            onClick={e => e.stopPropagation()}
-          >
-            <p className="text-xs font-semibold text-slate-400 px-2 py-1 mb-1">Move to…</p>
-            {STATUSES.map(s => (
-              <button
-                key={s.id}
-                className={`flex items-center gap-2.5 w-full px-2 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-slate-700
-                  ${ticket.status === s.id ? s.color + ' bg-slate-700' : 'text-slate-300'}`}
-                onClick={() => {
-                  updateTicketStatus(ticket.id, s.id)
-                  setShowStatusPicker(false)
-                }}
-              >
-                <span className={`w-2 h-2 rounded-full border-2 ${s.border}`} />
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>,
-        document.body
-      )}
-    </>
   )
 }
-
 

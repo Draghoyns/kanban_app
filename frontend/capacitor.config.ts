@@ -9,6 +9,11 @@ const config: CapacitorConfig = {
       autoDeleteBundles: true,
       resetOnUpdate:     false,
     },
+    LocalNotifications: {
+      smallIcon:  'ic_launcher_foreground',
+      iconColor:  '#f59e0b',
+      sound:      'default',
+    },
   },
 }
 
