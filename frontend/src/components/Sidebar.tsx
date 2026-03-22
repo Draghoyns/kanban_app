@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 import { useLiveUpdate } from '@/hooks/useLiveUpdate'
 import TagBadge from '@/components/TagBadge'
+import type { Ticket, Memo, Tag as TagType } from '@/types'
 
 const PALETTE_PRESETS = [
   { name: 'Pink',    color: '#ec4899' },
@@ -49,9 +50,54 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl, tickets, memos } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
+
+  const importRef = useRef<HTMLInputElement>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importOk,    setImportOk]    = useState(false)
+
+  function handleExport() {
+    const payload = { version: 1, exportedAt: new Date().toISOString(), tickets, memos, tags }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `kanban-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportError(null)
+    setImportOk(false)
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result as string)
+        if (!parsed || typeof parsed !== 'object') throw new Error('Invalid file')
+        const inTickets: Ticket[] = Array.isArray(parsed.tickets) ? parsed.tickets : []
+        const inMemos:   Memo[]   = Array.isArray(parsed.memos)   ? parsed.memos   : []
+        const inTags:    TagType[] = Array.isArray(parsed.tags)   ? parsed.tags    : []
+        if (inTickets.length === 0 && inMemos.length === 0 && inTags.length === 0)
+          throw new Error('File contains no data')
+        if (!window.confirm(
+          `This will REPLACE all current data with the backup\n(${inTickets.length} tickets, ${inMemos.length} memos, ${inTags.length} EPICs).\n\nContinue?`
+        )) return
+        useStore.setState({ tickets: inTickets, memos: inMemos, tags: inTags })
+        setImportOk(true)
+      } catch (err) {
+        setImportError(err instanceof Error ? err.message : 'Failed to parse file')
+      } finally {
+        // Reset the input so the same file can be re-selected
+        if (importRef.current) importRef.current.value = ''
+      }
+    }
+    reader.readAsText(file)
+  }
 
   const [newEpicName,  setNewEpicName]  = useState('')
   const [newEpicColor, setNewEpicColor] = useState('#ec4899')
@@ -364,6 +410,50 @@ export default function Sidebar() {
               >
                 <Plus size={13} />
               </button>
+            </div>
+          </Section>
+
+          {/* ── Data ─────────────────────────────────────────────────── */}
+          <Section
+            icon={<Download size={15} style={{ color: 'var(--accent)' }} />}
+            title="Data"
+            open={open.data ?? false}
+            onToggle={() => toggle('data')}
+          >
+            <p className="text-xs text-slate-400 leading-relaxed mb-3">
+              Export a full backup of all tickets, memos, and EPICs as a JSON file.
+              Import to restore from a previous backup — this replaces all current data.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors"
+              >
+                <Download size={13} /> Export backup
+              </button>
+              <button
+                onClick={() => { setImportError(null); setImportOk(false); importRef.current?.click() }}
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors"
+              >
+                <Upload size={13} /> Import backup
+              </button>
+              <input
+                ref={importRef}
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+              {importError && (
+                <p className="text-xs text-rose-400 flex items-center gap-1">
+                  <AlertCircle size={11} /> {importError}
+                </p>
+              )}
+              {importOk && (
+                <p className="text-xs text-emerald-400 flex items-center gap-1">
+                  <CheckCircle size={11} /> Data restored successfully
+                </p>
+              )}
             </div>
           </Section>
 
