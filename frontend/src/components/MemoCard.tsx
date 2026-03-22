@@ -3,6 +3,7 @@ import { Pin, Trash2, Edit2 } from 'lucide-react'
 import type { Memo } from '@/types'
 import { useStore } from '@/store/useStore'
 import TagBadge from './TagBadge'
+import { renderMarkdown } from './MarkdownField'
 
 interface Props {
   memo:   Memo
@@ -57,9 +58,9 @@ export default function MemoCard({ memo, onEdit }: Props) {
       </h3>
 
       {memo.content && (
-        <p className="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap">
-          {memo.content}
-        </p>
+        <div className="text-xs text-slate-400 leading-relaxed [&_p]:mb-0.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_li]:leading-snug [&_li]:mb-px">
+          {renderMarkdown(memo.content)}
+        </div>
       )}
 
       {memo.tags.length > 0 && (
