@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X, ChevronDown, ChevronUp, Calendar } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { X, ChevronDown, ChevronUp, Calendar, Search } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 
@@ -22,11 +22,14 @@ const DUE_DATE_OPTIONS: { id: DueDateFilter; label: string; cls: string; activeC
 interface Props {
   filters:  ActiveFilters
   onChange: (f: ActiveFilters) => void
+  search:   string
+  onSearch: (q: string) => void
 }
 
-export default function FilterBar({ filters, onChange }: Props) {
+export default function FilterBar({ filters, onChange, search, onSearch }: Props) {
   const { tags } = useStore()
   const [open, setOpen] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   const hasFilters = filters.priorities.length > 0 || filters.epicIds.length > 0 || filters.estimations.length > 0 || filters.dueDate != null
 
@@ -61,21 +64,45 @@ export default function FilterBar({ filters, onChange }: Props) {
 
   return (
     <div className="border-b border-slate-800 bg-slate-950/60 shrink-0">
-      {/* Toggle row */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-2 text-[11px] font-semibold text-slate-500 hover:text-slate-300 transition-colors"
-      >
-        <span className="uppercase tracking-wider flex items-center gap-2">
-          Filters
-          {hasFilters && (
-            <span className="px-1.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] text-[10px] font-bold">
-              {filters.priorities.length + filters.epicIds.length + filters.estimations.length + (filters.dueDate != null ? 1 : 0)}
-            </span>
+      {/* Search + filter toggle row */}
+      <div className="flex items-center gap-2 px-3 py-2">
+        {/* Search input */}
+        <div className="relative flex-1 max-w-xs">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          <input
+            ref={searchRef}
+            id="board-search"
+            className="input h-7 pl-7 pr-7 text-xs w-full"
+            placeholder="Search tickets…"
+            value={search}
+            onChange={e => onSearch(e.target.value)}
+          />
+          {search && (
+            <button
+              onClick={() => onSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              <X size={12} />
+            </button>
           )}
-        </span>
-        {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-      </button>
+        </div>
+
+        {/* Filter toggle button */}
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-500 hover:text-slate-300 transition-colors border border-transparent hover:border-slate-700"
+        >
+          <span className="uppercase tracking-wider flex items-center gap-1.5">
+            Filters
+            {hasFilters && (
+              <span className="px-1.5 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] text-[10px] font-bold">
+                {filters.priorities.length + filters.epicIds.length + filters.estimations.length + (filters.dueDate != null ? 1 : 0)}
+              </span>
+            )}
+          </span>
+          {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+        </button>
+      </div>
 
       {/* Expandable filter rows */}
       {open && (

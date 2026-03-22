@@ -54,6 +54,7 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-600 font-mono select-none">
           <span title="New ticket"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">N</kbd> ticket</span>
           <span title="New memo"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">M</kbd> memo</span>
+          <span title="Search tickets"><kbd className="px-1.5 py-0.5 rounded border border-slate-700 bg-slate-900">/</kbd> search</span>
         </div>
 
         <button

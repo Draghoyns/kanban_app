@@ -28,6 +28,11 @@ export default function App() {
         e.preventDefault()
         setActiveTab('memo')
         triggerNewMemo()
+      } else if (e.key === '/') {
+        e.preventDefault()
+        setActiveTab('kanban')
+        // Small delay lets the board render before focusing
+        setTimeout(() => document.getElementById('board-search')?.focus(), 50)
       }
     }
     window.addEventListener('keydown', onKey)

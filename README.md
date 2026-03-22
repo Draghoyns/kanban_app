@@ -16,6 +16,7 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Drag to reorder** within a column — freely within the same priority group; priority order (P1 → P4) is always enforced
 - **Hide Done** toggle to keep the board clean
 - **Filter bar** — filter by Priority, Estimation, EPIC, or Due date (Overdue · This week · This month · No due date)
+- **Search** — keyword search across all columns (title, Why, What, How); press `/` to focus
 
 ### Tickets
 - **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
@@ -278,7 +279,7 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
 
 ### UX / polish
-- [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo (desktop/web only; hints shown in header)
+- [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo, `/` = search (desktop/web only; hints shown in header)
 - [ ] Swipe gestures on mobile to move a ticket between columns
 - [ ] Light/dark mode follows system automatically (currently manual)
 - [ ] Undo last delete (toast with "Undo" button, ~5 s window)

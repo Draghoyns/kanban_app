@@ -49,6 +49,7 @@ export default function KanbanBoard() {
   const [createStatus, setCreateStatus]   = useState<TicketStatus | null>(null)
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
   const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [], dueDate: null })
+  const [search,       setSearch]         = useState('')
 
   // Open new-ticket modal when shortcut fires (skip first render)
   const isFirst = useRef(true)
@@ -180,20 +181,37 @@ export default function KanbanBoard() {
 
   const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
-  const ticketsByStatus = (status: TicketStatus) =>
-    displayed
+  const ticketsByStatus = (status: TicketStatus) => {
+    const q = search.trim().toLowerCase()
+    return displayed
       .filter(t => t.status === status)
       .filter(t => ticketMatchesFilter(t, filters))
+      .filter(t => {
+        if (!q) return true
+        if (t.title.toLowerCase().includes(q)) return true
+        if (t.description) {
+          try {
+            const p = JSON.parse(t.description)
+            if (typeof p === 'object' && p !== null) {
+              return [p.why, p.what, ...(p.how ?? []).map((h: { text: string }) => h.text)]
+                .filter(Boolean).some((s: string) => s.toLowerCase().includes(q))
+            }
+          } catch {}
+          return t.description.toLowerCase().includes(q)
+        }
+        return false
+      })
       .sort((a, b) => {
         const pa = a.priority != null ? (PRIORITY_ORDER[a.priority] ?? 99) : 99
         const pb = b.priority != null ? (PRIORITY_ORDER[b.priority] ?? 99) : 99
         if (pa !== pb) return pa - pb
         return a.position - b.position
       })
+  }
 
   return (
     <>
-      <FilterBar filters={filters} onChange={setFilters} />
+      <FilterBar filters={filters} onChange={setFilters} search={search} onSearch={setSearch} />
 
       <DndContext
         sensors={sensors}
