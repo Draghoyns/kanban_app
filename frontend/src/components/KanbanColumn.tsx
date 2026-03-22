@@ -21,7 +21,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
   const overWip   = wipLimit != null && tickets.length > wipLimit
 
   return (
-    <div className="flex flex-col w-[60vw] shrink-0">
+    <div className="flex flex-col w-[60vw] shrink-0 min-h-0">
       {/* Column header */}
       <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} ${overWip ? 'bg-amber-950/40' : 'bg-slate-900/60'}`}>
         <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
@@ -55,7 +55,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className={`flex flex-col gap-2 min-h-24 rounded-xl p-2 transition-colors ${
+        className={`flex flex-col gap-2 min-h-24 rounded-xl p-2 transition-colors overflow-y-auto flex-1 ${
           isOver ? 'bg-slate-800/60 ring-1 ring-indigo-500/50' : 'bg-transparent'
         }`}
       >
