@@ -285,7 +285,24 @@ export const useStore = create<AppStore>()(
         }))
       },
     }),
-    { name: 'kanban-store' }
+    {
+      name: 'kanban-store',
+      partialize: (s) => ({
+        tickets:              s.tickets,
+        memos:                s.memos,
+        tags:                 s.tags,
+        activeTab:            s.activeTab,
+        hideDone:             s.hideDone,
+        theme:                s.theme,
+        accentColor:          s.accentColor,
+        notificationHour:     s.notificationHour,
+        notificationMinute:   s.notificationMinute,
+        notificationsEnabled: s.notificationsEnabled,
+        backendUrl:           s.backendUrl,
+        wipLimits:            s.wipLimits,
+        // sidebarOpen, newTicketTrigger, newMemoTrigger intentionally excluded
+      }),
+    }
   )
 )
 
