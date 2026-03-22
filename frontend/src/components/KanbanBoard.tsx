@@ -269,7 +269,8 @@ export default function KanbanBoard() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 p-4 overflow-x-auto flex-1 items-stretch">
+        <div className="flex-1 min-h-0 overflow-x-auto">
+        <div className="flex gap-4 p-4 items-stretch h-full">
           {visibleStatuses.map(status => (
             <KanbanColumn
               key={status.id}
@@ -281,6 +282,7 @@ export default function KanbanBoard() {
               onDeleteTicket={handleDeleteTicket}
             />
           ))}
+        </div>
         </div>
 
         {createPortal(
