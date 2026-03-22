@@ -251,21 +251,21 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [x] Due dates with overdue highlighting
 - [x] Filter board by due date (Overdue · This week · This month · No due date)
 - [x] Drag to reorder tickets within a column (within the same priority group — priority order is always preserved)
-- [ ] Sub-tasks / checklist inside a ticket
+- [x] Sub-tasks / checklist inside a ticket
 
 ### Board improvements
 - [ ] Multiple boards (e.g. Work, Personal, Side projects)
 - [ ] Custom columns (rename, add, delete, reorder)
-- [ ] WIP limits per column with visual warning when exceeded
+- [x] WIP limits per column with visual warning when exceeded
 - [ ] Archive column for done tickets instead of deleting
 
 ### EPICs / tags
 - [ ] EPIC progress bar showing % of tickets done (opt-in per EPIC at creation time)
-- [ ] Filter board by EPIC (show only tickets belonging to one EPIC)
+- [x] Filter board by EPIC (show only tickets belonging to one EPIC)
 
 ### Memos
-- [ ] Pin important memos to the top
-- [ ] Markdown rendering in memo body
+- [x] Pin important memos to the top
+- [x] Markdown rendering in memo body
 - [ ] Attach a memo to a specific ticket
 
 ### Notifications
@@ -282,7 +282,7 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo, `/` = search (desktop/web only; hints shown in header)
 - [ ] Swipe gestures on mobile to move a ticket between columns
 - [ ] Light/dark mode follows system automatically (currently manual)
-- [ ] Undo last delete (toast with "Undo" button, ~5 s window)
+- [x] Undo last delete (toast with "Undo" button, ~5 s window)
 
 ---
 
