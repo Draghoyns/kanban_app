@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent,
-  MouseSensor, useSensor, useSensors, closestCorners,
+  MouseSensor, TouchSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { createPortal } from 'react-dom'
@@ -151,7 +151,8 @@ export default function KanbanBoard() {
     .filter(t => t.id !== deleteTicketPending?.id)
 
   const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } })
+    useSensor(MouseSensor,  { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor,  { activationConstraint: { delay: 250, tolerance: 8 } })
   )
 
   function handleDragStart({ active }: DragStartEvent) {
