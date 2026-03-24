@@ -4,6 +4,7 @@ import { useStore } from '@/store/useStore'
 import Header      from '@/components/layout/Header'
 import KanbanBoard from '@/components/KanbanBoard'
 import MemoTab     from '@/components/MemoTab'
+import RoutineTab  from '@/components/RoutineTab'
 import Sidebar     from '@/components/Sidebar'
 
 export default function App() {
@@ -66,7 +67,7 @@ export default function App() {
     <div className="flex flex-col h-full">
       <Header />
       <main className="flex-1 overflow-hidden flex flex-col">
-        {activeTab === 'kanban' ? <KanbanBoard /> : <MemoTab />}
+        {activeTab === 'kanban' ? <KanbanBoard /> : activeTab === 'memo' ? <MemoTab /> : <RoutineTab />}
       </main>
       {sidebarOpen && <Sidebar />}
     </div>

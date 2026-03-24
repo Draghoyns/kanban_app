@@ -7,9 +7,10 @@ import TagBadge from './TagBadge'
 import MarkdownField from './MarkdownField'
 
 interface Props {
-  ticket?:        Ticket
-  initialStatus?: TicketStatus
-  onClose:        () => void
+  ticket?:          Ticket
+  initialStatus?:   TicketStatus
+  initialIsRoutine?: boolean
+  onClose:          () => void
 }
 
 const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
@@ -36,7 +37,7 @@ function parseDescription(raw?: string | null): { why: string; what: string; how
   return { why: raw, what: '', how: [] }
 }
 
-export default function TicketModal({ ticket, initialStatus = 'backlog', onClose }: Props) {
+export default function TicketModal({ ticket, initialStatus = 'backlog', initialIsRoutine = false, onClose }: Props) {
   const { tags, createTicket, updateTicket, createTag } = useStore()
 
   const parsed = parseDescription(ticket?.description)
@@ -58,7 +59,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', onClose
   const [error,          setError]          = useState('')
 
   // Routine state
-  const [isRoutine,      setIsRoutine]      = useState(ticket?.is_routine         ?? false)
+  const [isRoutine,      setIsRoutine]      = useState(ticket?.is_routine         ?? initialIsRoutine)
   const [frequencyType,  setFrequencyType]  = useState<FrequencyType>(ticket?.frequency_type ?? 'daily')
   const [frequencyDays,  setFrequencyDays]  = useState<string[]>(ticket?.frequency_days ?? [])
   const [freqInterval,   setFreqInterval]   = useState(ticket?.frequency_interval ?? 2)

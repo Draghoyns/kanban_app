@@ -149,6 +149,8 @@ export default function KanbanBoard() {
   // Use local copy during drag to enable optimistic moves
   const displayed = (activeTicket ? localTickets : tickets)
     .filter(t => t.id !== deleteTicketPending?.id)
+    .filter(t => !t.is_routine)                                        // templates live only in Routine tab
+    .filter(t => !(t.parent_id !== null && t.status === 'done'))       // done routine instances disappear
 
   const sensors = useSensors(
     useSensor(MouseSensor,  { activationConstraint: { distance: 6 } }),

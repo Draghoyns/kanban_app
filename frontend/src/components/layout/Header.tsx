@@ -1,6 +1,6 @@
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
-import { LayoutDashboard, StickyNote, Bell, BellOff } from 'lucide-react'
+import { LayoutDashboard, StickyNote, Repeat, Bell, BellOff } from 'lucide-react'
 
 const tabs = [
   { id: 'kanban' as const, label: 'Kanban', icon: LayoutDashboard },
@@ -47,6 +47,18 @@ export default function Header() {
             {label}
           </button>
         ))}
+        {/* Hidden routine tab — icon only */}
+        <button
+          onClick={() => setActiveTab('routine')}
+          title="Routines"
+          className={`p-1.5 rounded-lg transition-colors
+            ${activeTab === 'routine'
+              ? 'text-slate-950'
+              : 'text-slate-600 hover:text-slate-400 hover:bg-slate-800'}`}
+          style={activeTab === 'routine' ? { backgroundColor: 'var(--accent)' } : {}}
+        >
+          <Repeat size={14} />
+        </button>
       </nav>
 
       <div className="ml-auto flex items-center gap-2">

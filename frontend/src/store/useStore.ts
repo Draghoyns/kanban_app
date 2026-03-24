@@ -33,7 +33,7 @@ interface AppStore {
   tickets:     Ticket[]
   memos:       Memo[]
   tags:        Tag[]
-  activeTab:        'kanban' | 'memo'
+  activeTab:        'kanban' | 'memo' | 'routine'
   hideDone:         boolean
   theme:            'dark' | 'light'
   accentColor:      string
@@ -46,7 +46,7 @@ interface AppStore {
   newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
   wipLimits:            Partial<Record<TicketStatus, number>>
 
-  setActiveTab:           (tab: 'kanban' | 'memo') => void
+  setActiveTab:           (tab: 'kanban' | 'memo' | 'routine') => void
   setHideDone:            (v: boolean) => void
   setTheme:               (theme: 'dark' | 'light') => void
   setAccentColor:         (color: string) => void
@@ -200,11 +200,11 @@ export const useStore = create<AppStore>()(
           id:                 genId() + i,
           title:              t.title,
           description:        t.description,
-          status:             'backlog',
+          status:             'today',
           priority:           t.priority ?? null,
           estimation:         t.estimation ?? null,
           due_date:           null,
-          position:           tickets.filter(x => x.status === 'backlog').length + i,
+          position:           tickets.filter(x => x.status === 'today').length + i,
           is_routine:         false,
           frequency_type:     null,
           frequency_days:     null,
