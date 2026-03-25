@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2 } from 'lucide-react'
+import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
 import { useLiveUpdate } from '@/hooks/useLiveUpdate'
@@ -75,17 +76,23 @@ export default function Sidebar() {
     if (exportLoading) return
     setExportLoading(true)
     setExportDone(false)
-    const payload = { version: 1, exportedAt: new Date().toISOString(), tickets, memos, tags }
+    const payload  = { version: 1, exportedAt: new Date().toISOString(), tickets, memos, tags }
     const json     = JSON.stringify(payload, null, 2)
     const filename = `kanban-backup-${new Date().toISOString().slice(0, 10)}.json`
-    const file     = new File([json], filename, { type: 'application/json' })
 
     try {
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Kanban Backup' })
+      if (Capacitor.isNativePlatform()) {
+        // Write to cache dir then open native share sheet so user can save to Downloads/Drive/etc.
+        const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+        const { Share } = await import('@capacitor/share')
+        await Filesystem.writeFile({ path: filename, data: json, directory: Directory.Cache, encoding: Encoding.UTF8 })
+        const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
+        await Share.share({ title: 'Kanban Backup', url: uri, dialogTitle: 'Save backup to…' })
       } else {
-        const url = URL.createObjectURL(file)
-        const a   = document.createElement('a')
+        // Web fallback: trigger browser download
+        const file = new File([json], filename, { type: 'application/json' })
+        const url  = URL.createObjectURL(file)
+        const a    = document.createElement('a')
         a.href     = url
         a.download = filename
         a.click()

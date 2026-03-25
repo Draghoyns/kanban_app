@@ -20,8 +20,12 @@ cap-sync:
 
 # Install app on a connected Android device via USB
 android:
-    export ANDROID_HOME="$HOME/Library/Android/sdk" && \
-    cd frontend && npm run build && npx cap sync android && npx cap run android
+    cd frontend && npm run build && npx cap sync android
+    cd frontend/android && ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew assembleDebug
+    "$HOME/Library/Android/sdk/platform-tools/adb" install -r frontend/android/app/build/outputs/apk/debug/app-debug.apk
+    # Clear LiveUpdate cached bundles so the fresh APK assets are loaded
+    "$HOME/Library/Android/sdk/platform-tools/adb" shell run-as com.portfolio.kanbanmemo rm -rf /data/data/com.portfolio.kanbanmemo/files/_capacitor_live_update_bundles || true
+    "$HOME/Library/Android/sdk/platform-tools/adb" shell run-as com.portfolio.kanbanmemo rm -f /data/data/com.portfolio.kanbanmemo/shared_prefs/CapWebViewSettings.xml || true
 
 # Open the iOS project in Xcode
 ios:
