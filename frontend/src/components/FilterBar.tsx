@@ -13,10 +13,10 @@ export interface ActiveFilters {
 }
 
 const DUE_DATE_OPTIONS: { id: DueDateFilter; label: string; cls: string; activeCls: string }[] = [
-  { id: 'overdue',      label: 'Overdue',      cls: 'border-slate-700 text-slate-600 hover:border-rose-700 hover:text-rose-400',   activeCls: 'bg-rose-950 text-rose-400 border-rose-800'     },
-  { id: 'this_week',   label: 'This week',    cls: 'border-slate-700 text-slate-600 hover:border-amber-700 hover:text-amber-400', activeCls: 'bg-amber-950 text-amber-400 border-amber-800'   },
-  { id: 'this_month',  label: 'This month',   cls: 'border-slate-700 text-slate-600 hover:border-blue-700 hover:text-blue-400',   activeCls: 'bg-blue-950 text-blue-400 border-blue-800'     },
-  { id: 'no_due_date', label: 'No due date',  cls: 'border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400', activeCls: 'bg-slate-800 text-slate-300 border-slate-600'  },
+  { id: 'overdue',      label: 'Overdue',      cls: 'border-slate-700 text-slate-600 hover:border-rose-500/50 hover:text-rose-500',   activeCls: 'bg-rose-500/15 text-rose-500 border-rose-500/50'     },
+  { id: 'this_week',   label: 'This week',    cls: 'border-slate-700 text-slate-600 hover:border-amber-500/50 hover:text-amber-600', activeCls: 'bg-amber-500/15 text-amber-600 border-amber-500/50'  },
+  { id: 'this_month',  label: 'This month',   cls: 'border-slate-700 text-slate-600 hover:border-blue-500/50 hover:text-blue-500',   activeCls: 'bg-blue-500/15 text-blue-500 border-blue-500/50'     },
+  { id: 'no_due_date', label: 'No due date',  cls: 'border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400',   activeCls: 'bg-slate-500/15 text-slate-500 border-slate-500/50'  },
 ]
 
 interface Props {
@@ -62,7 +62,7 @@ export default function FilterBar({ filters, onChange, search, onSearch }: Props
   }
 
   return (
-    <div className="border-b border-slate-800 bg-slate-950/60 shrink-0">
+    <div className="border-b border-slate-800 bg-slate-500/5 shrink-0">
       {/* Search + filter toggle row */}
       <div className="flex items-center gap-2 px-3 py-2">
         {/* Search input */}
@@ -151,10 +151,10 @@ export default function FilterBar({ filters, onChange, search, onSearch }: Props
                   <button
                     key={tag.id}
                     onClick={() => toggleEpic(tag.id)}
-                    className="px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all"
-                    style={active
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border transition-all ${!active ? 'border-slate-700 text-slate-500' : ''}`}
+                  style={active
                       ? { backgroundColor: tag.color + '33', color: tag.color, borderColor: tag.color + '88' }
-                      : { backgroundColor: 'transparent', color: '#475569', borderColor: '#334155' }
+                      : undefined
                     }
                   >
                     {tag.name}

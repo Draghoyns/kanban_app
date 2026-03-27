@@ -13,8 +13,8 @@ interface Props {
 export default function MemoCard({ memo, onEdit }: Props) {
   const { updateMemo, deleteMemo, theme } = useStore()
   const [deleting, setDeleting]           = useState(false)
-  const bgColor = theme === 'light'
-    ? `color-mix(in srgb, ${memo.color} 25%, white)`
+  const bgColor = theme === 'dark'
+    ? `color-mix(in srgb, ${memo.color} 20%, transparent)`
     : memo.color
 
   function handleDelete(e: React.MouseEvent) {
@@ -39,15 +39,15 @@ export default function MemoCard({ memo, onEdit }: Props) {
     >
       {/* Actions */}
       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={handlePin}   className="p-1 rounded-lg bg-slate-900/80 text-slate-400 hover:text-amber-400 transition-colors">
+        <button onClick={handlePin}   className="p-1 rounded-lg bg-black/25 text-white/70 hover:text-amber-400 transition-colors">
           <Pin size={13} className={memo.pinned ? 'text-amber-400 fill-current' : ''} />
         </button>
         <button onClick={e => { e.stopPropagation(); onEdit() }}
-          className="p-1 rounded-lg bg-slate-900/80 text-slate-400 hover:text-slate-100 transition-colors">
+          className="p-1 rounded-lg bg-black/25 text-white/70 hover:text-white transition-colors">
           <Edit2 size={13} />
         </button>
         <button onClick={handleDelete} disabled={deleting}
-          className="p-1 rounded-lg bg-slate-900/80 text-slate-400 hover:text-rose-400 transition-colors">
+          className="p-1 rounded-lg bg-black/25 text-white/70 hover:text-rose-300 transition-colors">
           <Trash2 size={13} />
         </button>
       </div>
@@ -56,12 +56,12 @@ export default function MemoCard({ memo, onEdit }: Props) {
         <Pin size={11} className="absolute top-2 left-2 text-amber-400 fill-current" />
       )}
 
-      <h3 className="font-semibold text-slate-100 text-sm pr-16 leading-snug">
+      <h3 className={`font-semibold text-sm pr-16 leading-snug ${theme === 'light' ? 'text-slate-800' : 'text-slate-100'}`}>
         {memo.title}
       </h3>
 
       {memo.content && (
-        <div className="text-xs text-slate-400 leading-relaxed [&_p]:mb-0.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_li]:leading-snug [&_li]:mb-px">
+        <div className={`text-xs leading-relaxed [&_p]:mb-0.5 [&_h1]:text-sm [&_h2]:text-xs [&_h3]:text-xs [&_li]:leading-snug [&_li]:mb-px ${theme === 'light' ? 'text-slate-700' : 'text-slate-400'}`}>
           {renderMarkdown(memo.content)}
         </div>
       )}

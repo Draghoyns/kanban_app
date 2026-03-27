@@ -24,7 +24,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
   return (
     <div className="flex flex-col w-[80vw] md:w-[360px] shrink-0 min-h-0">
       {/* Column header */}
-      <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} ${overWip ? 'bg-amber-950/40' : 'bg-slate-900/60'}`}>
+      <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} ${overWip ? 'bg-amber-500/15' : 'bg-slate-500/10'}`}>
         <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
         <div className="flex items-center gap-2">
           {overWip && (
@@ -39,7 +39,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
             </span>
           )}
           {wipLimit == null && (
-            <span className="text-xs text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded-full">
+            <span className="text-xs text-slate-500 bg-slate-500/20 px-1.5 py-0.5 rounded-full">
               {tickets.length}
             </span>
           )}

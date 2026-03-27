@@ -47,7 +47,7 @@ export default function RoutineTab() {
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-slate-400 flex items-center gap-2">
           <Repeat size={14} />
           Routines
         </h2>
@@ -92,13 +92,13 @@ export default function RoutineTab() {
             return (
               <div
                 key={template.id}
-                className="flex items-start gap-3 px-4 py-3 rounded-xl bg-slate-800/60 border border-slate-700/50"
+                className="flex items-start gap-3 px-4 py-3 rounded-xl bg-slate-500/10 border border-slate-500/20"
               >
                 {/* Status dot */}
                 <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-200 truncate">{template.title}</p>
+                  <p className="text-sm font-medium truncate">{template.title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{freqLabel(template)}</p>
                   {instanceLabel && (
                     <p className={`text-xs mt-1 font-medium ${instanceColor}`}>
@@ -113,14 +113,14 @@ export default function RoutineTab() {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => setEditRoutine(template)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-700 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-500/20 transition-colors"
                     title="Edit routine"
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     onClick={() => deleteTicket(template.id)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition-colors"
                     title="Delete routine"
                   >
                     <Trash2 size={14} />

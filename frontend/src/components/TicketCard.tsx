@@ -40,15 +40,15 @@ function dueDateBadge(dueDate: string): { label: string; cls: string } {
   const due = new Date(dueDate + 'T00:00:00')
   const diff = Math.round((due.getTime() - today.getTime()) / 86_400_000)
 
-  if (diff < 0)  return { label: `${Math.abs(diff)}d overdue`, cls: 'bg-rose-950 text-rose-400 border-rose-800' }
-  if (diff === 0) return { label: 'Due today',                  cls: 'bg-amber-950 text-amber-400 border-amber-800' }
-  if (diff === 1) return { label: 'Tomorrow',                   cls: 'bg-yellow-950 text-yellow-500 border-yellow-900' }
-  if (diff <= 7)  return { label: `${diff}d left`,              cls: 'bg-yellow-950/50 text-yellow-500/80 border-yellow-900/60' }
+  if (diff < 0)  return { label: `${Math.abs(diff)}d overdue`, cls: 'bg-rose-500/15 text-rose-500 border-rose-500/40' }
+  if (diff === 0) return { label: 'Due today',                  cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
+  if (diff === 1) return { label: 'Tomorrow',                   cls: 'bg-yellow-500/15 text-yellow-600 border-yellow-500/40' }
+  if (diff <= 7)  return { label: `${diff}d left`,              cls: 'bg-yellow-500/10 text-yellow-600/70 border-yellow-500/25' }
 
   // Format as "25 Mar"
   const [, m, d] = dueDate.split('-')
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-  return { label: `${parseInt(d)} ${months[parseInt(m) - 1]}`, cls: 'bg-slate-800 text-slate-400 border-slate-700' }
+  return { label: `${parseInt(d)} ${months[parseInt(m) - 1]}`, cls: 'bg-slate-500/15 text-slate-500 border-slate-500/40' }
 }
 
 export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onDelete }: Props) {
@@ -128,13 +128,13 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
               )
             })()}
             {ticket.is_routine && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/40">
                 <RefreshCw size={9} />
                 routine
               </span>
             )}
             {ticket.parent_id != null && !ticket.is_routine && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-500/15 text-slate-500 border border-slate-500/40">
                 <GitBranch size={9} />
                 generated
               </span>

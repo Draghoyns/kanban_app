@@ -50,7 +50,7 @@ export default function MemoTab() {
           <button
             onClick={() => setFilterTag(null)}
             className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors whitespace-nowrap
-              ${filterTag == null ? 'border-indigo-500 text-indigo-300 bg-indigo-950/60' : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
+                     ${filterTag == null ? 'border-indigo-500/70 text-indigo-500 bg-indigo-500/15' : 'border-slate-700 text-slate-500 hover:border-slate-600'}`}
           >
             All
           </button>

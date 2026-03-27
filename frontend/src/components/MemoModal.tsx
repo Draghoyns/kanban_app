@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function MemoModal({ memo, onClose }: Props) {
-  const { tags, createMemo, updateMemo, createTag } = useStore()
+  const { tags, createMemo, updateMemo, createTag, theme } = useStore()
 
   const [title,          setTitle]          = useState(memo?.title   ?? '')
   const [content,        setContent]        = useState(memo?.content ?? '')
@@ -85,14 +85,19 @@ export default function MemoModal({ memo, onClose }: Props) {
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1 block">Color</label>
             <div className="flex gap-2">
-              {MEMO_COLORS.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setColor(c)}
-                  className={`w-7 h-7 rounded-lg border-2 transition-all ${color === c ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-slate-500'}`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
+              {MEMO_COLORS.map(c => {
+                const displayColor = theme === 'dark'
+                  ? `color-mix(in srgb, ${c} 20%, transparent)`
+                  : c
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setColor(c)}
+                    className={`w-7 h-7 rounded-lg border-2 transition-all ${color === c ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-slate-500'}`}
+                    style={{ backgroundColor: displayColor }}
+                  />
+                )
+              })}
             </div>
           </div>
 
@@ -100,7 +105,7 @@ export default function MemoModal({ memo, onClose }: Props) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPinned(!pinned)}
-              className={`relative w-10 h-5 rounded-full transition-colors ${pinned ? 'bg-amber-500' : 'bg-slate-700'}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${pinned ? 'bg-amber-500' : 'bg-slate-500/40'}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${pinned ? 'translate-x-5' : ''}`} />
             </button>

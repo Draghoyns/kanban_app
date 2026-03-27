@@ -88,3 +88,14 @@ html.light .border-slate-800 { border-color: color-mix(in srgb, var(--accent) 70
 html.light .hover\:bg-slate-800:hover { background-color: color-mix(in srgb, var(--accent) 30%, white) !important; }
 html.light .hover\:bg-slate-800\/60:hover { background-color: color-mix(in srgb, var(--accent) 20%, white) !important; }
 html.light * { scrollbar-color: var(--accent) transparent; }
+/* Status text colors: use darker shades so they're visible on a light background */
+html.light .text-blue-400    { color: #2563eb !important; }
+html.light .text-rose-400    { color: #e11d48 !important; }
+html.light .text-amber-400   { color: #b45309 !important; }
+html.light .text-emerald-400 { color: #059669 !important; }
+/* borders */
+html.light .border-slate-700 { border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important; }
+html.light .border-slate-800 { border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important; }
+/* bg-slate-700/600 (theme toggle buttons, pin toggle, progress track) */
+html.light .bg-slate-700 { background-color: #fcd34d !important; }
+html.light .bg-slate-600 { background-color: #fbbf24 !important; }

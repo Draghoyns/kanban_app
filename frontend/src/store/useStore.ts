@@ -87,7 +87,7 @@ export const useStore = create<AppStore>()(
       notificationMinute:   0,
       notificationsEnabled: false,
       sidebarOpen:          false,
-      backendUrl:           'http://192.168.1.3:8000',
+      backendUrl:           'http://192.168.1.4:8000',
       newTicketTrigger:     0,
       newMemoTrigger:       0,
       wipLimits:            {},

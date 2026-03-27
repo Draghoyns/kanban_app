@@ -347,7 +347,7 @@ export default function Sidebar() {
                     title="Light theme"
                     className={`p-1.5 rounded-md transition-colors ${
                       theme === 'light'
-                        ? 'bg-slate-600 text-yellow-300'
+                        ? 'bg-[var(--accent)]/30 text-amber-600'
                         : 'text-slate-500 hover:text-slate-300'
                     }`}
                   >
@@ -358,7 +358,7 @@ export default function Sidebar() {
                     title="Dark theme"
                     className={`p-1.5 rounded-md transition-colors ${
                       theme === 'dark'
-                        ? 'bg-slate-700 text-blue-300'
+                        ? 'bg-slate-500/30 text-blue-300'
                         : 'text-slate-500 hover:text-slate-300'
                     }`}
                   >

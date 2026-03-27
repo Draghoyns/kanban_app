@@ -325,7 +325,7 @@ export default function KanbanBoard() {
             </button>
           </div>
           {/* Progress bar draining left-to-right */}
-          <div className="h-0.5 bg-slate-700">
+          <div className="h-0.5 bg-slate-500/30">
             <div
               className="h-full transition-none"
               style={{ width: `${(1 - undoProgress) * 100}%`, backgroundColor: 'var(--accent)' }}
@@ -349,7 +349,7 @@ export default function KanbanBoard() {
               Undo
             </button>
           </div>
-          <div className="h-0.5 bg-slate-700">
+          <div className="h-0.5 bg-slate-500/30">
             <div
               className="h-full transition-none"
               style={{ width: `${(1 - deleteProgress) * 100}%`, backgroundColor: 'var(--accent)' }}
