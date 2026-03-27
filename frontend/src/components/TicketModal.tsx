@@ -62,7 +62,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
   const [isRoutine,      setIsRoutine]      = useState(ticket?.is_routine         ?? initialIsRoutine)
   const [frequencyType,  setFrequencyType]  = useState<FrequencyType>(ticket?.frequency_type ?? 'daily')
   const [frequencyDays,  setFrequencyDays]  = useState<string[]>(ticket?.frequency_days ?? [])
-  const [freqInterval,   setFreqInterval]   = useState(ticket?.frequency_interval ?? 2)
+  const [freqInterval,   setFreqInterval]   = useState<string>(String(ticket?.frequency_interval ?? 2))
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
@@ -145,12 +145,13 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
 
   function handleSave() {
     if (!title.trim()) { setError('Title is required'); return }
+    if (isRoutine && frequencyType === 'interval' && freqInterval.trim() === '') { setError('Interval days cannot be empty'); return }
     const routineFields = isRoutine
       ? {
           is_routine:         true,
           frequency_type:     frequencyType,
           frequency_days:     frequencyType === 'weekly' ? frequencyDays : undefined,
-          frequency_interval: frequencyType === 'interval' ? freqInterval : undefined,
+          frequency_interval: frequencyType === 'interval' ? Number(freqInterval) : undefined,
         }
       : {
           is_routine:         false,
@@ -472,7 +473,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
                       max={365}
                       className="input w-16 text-center py-1"
                       value={freqInterval}
-                      onChange={e => setFreqInterval(Math.max(1, Number(e.target.value)))}
+                      onChange={e => setFreqInterval(e.target.value)}
                     />
                     <span>days</span>
                   </div>
