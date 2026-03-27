@@ -105,7 +105,7 @@ export default function MemoModal({ memo, onClose }: Props) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPinned(!pinned)}
-              className={`relative w-10 h-5 rounded-full transition-colors ${pinned ? 'bg-amber-500' : 'bg-slate-500/40'}`}
+              className={`relative w-10 h-5 rounded-full transition-colors ${pinned ? 'bg-[var(--accent)]' : 'bg-slate-500/40'}`}
             >
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${pinned ? 'translate-x-5' : ''}`} />
             </button>
