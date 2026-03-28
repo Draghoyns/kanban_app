@@ -4,6 +4,7 @@ from sqlalchemy import (
     String,
     Text,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     JSON,
@@ -80,6 +81,9 @@ class Ticket(Base):
     )  # daily | weekly | interval | weekdays
     frequency_days = Column(JSON, nullable=True)  # ["monday", "friday"]
     frequency_interval = Column(Integer, nullable=True)  # days between runs
+    start_date = Column(
+        Date, nullable=True
+    )  # anchor for interval counting; defaults to created_at
     last_generated = Column(DateTime, nullable=True)
 
     # Link generated copies back to their template

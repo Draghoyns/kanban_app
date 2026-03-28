@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 
@@ -52,6 +52,7 @@ class TicketBase(BaseModel):
     frequency_type: Optional[FrequencyType] = None
     frequency_days: Optional[List[str]] = None
     frequency_interval: Optional[int] = None
+    start_date: Optional[date] = None
 
 
 class TicketCreate(TicketBase):
@@ -67,6 +68,7 @@ class TicketUpdate(BaseModel):
     frequency_type: Optional[FrequencyType] = None
     frequency_days: Optional[List[str]] = None
     frequency_interval: Optional[int] = None
+    start_date: Optional[date] = None
     tag_ids: Optional[List[int]] = None
 
 

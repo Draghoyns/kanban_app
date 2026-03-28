@@ -28,6 +28,13 @@ def _should_generate_today(ticket, today: date) -> bool:
     if ticket.last_generated and ticket.last_generated.date() == today:
         return False
 
+    # Respect start_date: don't generate before it
+    start = ticket.start_date or (
+        ticket.created_at.date() if ticket.created_at else today
+    )
+    if today < start:
+        return False
+
     day_name = today.strftime("%A").lower()
 
     if freq_type == "daily":
@@ -41,7 +48,11 @@ def _should_generate_today(ticket, today: date) -> bool:
         interval = ticket.frequency_interval or 1
         if not ticket.last_generated:
             return True
-        return (today - ticket.last_generated.date()).days >= interval
+        last = ticket.last_generated.date()
+        # If start_date is newer than last_generated, use it as the reference
+        # (this is how the user resets the cycle by changing start_date)
+        ref = last if last >= start else start
+        return (today - ref).days >= interval
     return False
 
 

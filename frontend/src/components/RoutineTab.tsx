@@ -100,6 +100,11 @@ export default function RoutineTab() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{template.title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{freqLabel(template)}</p>
+                  {template.start_date && (
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      From {new Date(template.start_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
                   {instanceLabel && (
                     <p className={`text-xs mt-1 font-medium ${instanceColor}`}>
                       Today: {instanceLabel}

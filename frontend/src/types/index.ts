@@ -22,6 +22,7 @@ export interface Ticket {
   frequency_type:     FrequencyType | null
   frequency_days:     string[] | null
   frequency_interval: number | null
+  start_date:         string | null  // YYYY-MM-DD — anchor for interval counting
   last_generated:     string | null
   parent_id:          number | null
   created_at:         string
@@ -51,6 +52,7 @@ export interface TicketCreate {
   frequency_type?:     FrequencyType | null
   frequency_days?:     string[] | null
   frequency_interval?: number | null
+  start_date?:         string | null
   tag_ids?:            number[]
 }
 
@@ -66,6 +68,7 @@ export interface TicketUpdate {
   frequency_type?:     FrequencyType | null
   frequency_days?:     string[] | null
   frequency_interval?: number | null
+  start_date?:         string | null
   tag_ids?:            number[]
 }
 

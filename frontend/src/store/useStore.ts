@@ -8,7 +8,15 @@ const now   = () => new Date().toISOString()
 // Returns true if a routine ticket template should spawn a new instance today
 function isDue(t: Ticket, today: Date): boolean {
   if (!t.is_routine) return false
-  if (!t.last_generated) return true // never generated yet
+
+  // Don't generate before start_date
+  if (t.start_date) {
+    const start = new Date(t.start_date)
+    start.setHours(0, 0, 0, 0)
+    if (today < start) return false
+  }
+
+  if (!t.last_generated) return true
 
   const last = new Date(t.last_generated)
   last.setHours(0, 0, 0, 0)
@@ -22,7 +30,13 @@ function isDue(t: Ticket, today: Date): boolean {
       return t.frequency_days?.includes(names[today.getDay()]) ?? false
     }
     case 'interval': {
-      const days = Math.floor((today.getTime() - last.getTime()) / 86_400_000)
+      let ref = last
+      if (t.start_date) {
+        const start = new Date(t.start_date)
+        start.setHours(0, 0, 0, 0)
+        if (start > last) ref = start // start_date newer than last_generated → cycle was reset
+      }
+      const days = Math.floor((today.getTime() - ref.getTime()) / 86_400_000)
       return days >= (t.frequency_interval ?? 1)
     }
     default: return false
@@ -125,6 +139,7 @@ export const useStore = create<AppStore>()(
           frequency_type:     data.frequency_type     ?? null,
           frequency_days:     data.frequency_days     ?? null,
           frequency_interval: data.frequency_interval ?? null,
+          start_date:         data.start_date         ?? null,
           last_generated:     null,
           parent_id:          null,
           created_at:         now(),
@@ -150,6 +165,7 @@ export const useStore = create<AppStore>()(
               ...(data.priority           !== undefined ? { priority: data.priority }                  : {}),
               ...(data.estimation         !== undefined ? { estimation: data.estimation }              : {}),
               ...(data.due_date           !== undefined ? { due_date: data.due_date }                  : {}),
+              ...(data.start_date         !== undefined ? { start_date: data.start_date }              : {}),
               ...(data.position           != null    ? { position: data.position }                     : {}),
               ...(data.is_routine         != null    ? { is_routine: data.is_routine }                 : {}),
               ...(data.frequency_type     !== undefined ? { frequency_type: data.frequency_type }         : {}),
@@ -209,6 +225,7 @@ export const useStore = create<AppStore>()(
           frequency_type:     null,
           frequency_days:     null,
           frequency_interval: null,
+          start_date:         null,
           last_generated:     null,
           parent_id:          t.id,
           created_at:         now(),

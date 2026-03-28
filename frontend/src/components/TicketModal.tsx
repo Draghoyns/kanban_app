@@ -53,6 +53,9 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
   const [priority,       setPriority]       = useState<PriorityLevel | null>(ticket?.priority ?? null)
   const [estimation,     setEstimation]     = useState<EstimationSize | null>(ticket?.estimation ?? null)
   const [dueDate,        setDueDate]        = useState<string>(ticket?.due_date ?? '')
+  const [startDate,      setStartDate]      = useState<string>(
+    ticket?.start_date ?? new Date().toISOString().split('T')[0]
+  )
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(ticket?.tags.map(t => t.id) ?? [])
   const [newTagName,     setNewTagName]     = useState('')
   const [newTagColor,    setNewTagColor]    = useState('#ec4899')
@@ -152,12 +155,14 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
           frequency_type:     frequencyType,
           frequency_days:     frequencyType === 'weekly' ? frequencyDays : undefined,
           frequency_interval: frequencyType === 'interval' ? Number(freqInterval) : undefined,
+          start_date:         startDate.trim() || null,
         }
       : {
           is_routine:         false,
           frequency_type:     null  as null,
           frequency_days:     null  as null,
           frequency_interval: null  as null,
+          start_date:         null  as null,
         }
 
     const descPayload = { why: why.trim(), what: what.trim(), how: howItems }
@@ -169,7 +174,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
       status,
       priority,
       estimation,
-      due_date:    dueDate.trim() || null,
+      due_date:    isRoutine ? null : (dueDate.trim() || null),
       tag_ids:     selectedTagIds,
       ...routineFields,
     }
@@ -253,25 +258,42 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
             </div>
           </div>
 
-          {/* Due date */}
+          {/* Due date / Start date */}
           <div>
-            <label className="text-xs font-medium text-slate-400 mb-1.5 block">Due date</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                className="input text-sm h-8 w-40"
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
-              />
-              {dueDate && (
-                <button
-                  onClick={() => setDueDate('')}
-                  className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            {isRoutine ? (
+              <>
+                <label className="text-xs font-medium text-slate-400 mb-1.5 block">Start date</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    className="input text-sm h-8 w-40"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Used as the anchor for interval counting. Change to reset the cycle.</p>
+              </>
+            ) : (
+              <>
+                <label className="text-xs font-medium text-slate-400 mb-1.5 block">Due date</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    className="input text-sm h-8 w-40"
+                    value={dueDate}
+                    onChange={e => setDueDate(e.target.value)}
+                  />
+                  {dueDate && (
+                    <button
+                      onClick={() => setDueDate('')}
+                      className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:text-slate-300 border border-transparent hover:border-slate-700 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Why */}

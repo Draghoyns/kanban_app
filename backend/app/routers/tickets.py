@@ -37,6 +37,7 @@ def create_ticket(ticket: TicketCreate, db: Session = Depends(get_db)):
         frequency_type=ticket.frequency_type.value if ticket.frequency_type else None,
         frequency_days=ticket.frequency_days,
         frequency_interval=ticket.frequency_interval,
+        start_date=ticket.start_date,
     )
     if ticket.tag_ids:
         db_ticket.tags = db.query(Tag).filter(Tag.id.in_(ticket.tag_ids)).all()
