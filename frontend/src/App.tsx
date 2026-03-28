@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
+import { App as CapApp } from '@capacitor/app'
 import { useStore } from '@/store/useStore'
 import Header      from '@/components/layout/Header'
 import KanbanBoard from '@/components/KanbanBoard'
@@ -13,6 +14,22 @@ export default function App() {
 
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
+
+  // Android back button: close sidebar or topmost modal, else minimize
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const promise = CapApp.addListener('backButton', () => {
+      if (useStore.getState().sidebarOpen) {
+        useStore.getState().setSidebarOpen(false)
+        return
+      }
+      const handled = !window.dispatchEvent(
+        new CustomEvent('app:backButton', { cancelable: true, bubbles: false })
+      )
+      if (!handled) CapApp.minimizeApp()
+    })
+    return () => { promise.then(h => h.remove()).catch(() => {}) }
+  }, [])
 
   // Listen for notification taps: navigate to the indicated column
   useEffect(() => {

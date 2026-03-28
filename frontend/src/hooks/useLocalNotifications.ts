@@ -96,6 +96,7 @@ export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticke
     const body   = n === 0
       ? `Your ${colLabel} column is empty — check your backlog`
       : dayTickets.map(t => `• ${t.title}`).join('\n')
+    const largeBody = n > 0 ? dayTickets.map(t => `• ${t.title}`).join('\n') : undefined
 
     const at = new Date()
     at.setHours(hour, minute, 0, 0)
@@ -107,6 +108,7 @@ export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticke
         id:        NOTIFICATION_ID,
         title,
         body,
+        largeBody,
         schedule:  { at, every: 'day', allowWhileIdle: true },
         smallIcon: 'ic_stat_cherry',
         iconColor: '#6366f1',
