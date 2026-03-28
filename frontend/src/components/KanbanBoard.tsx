@@ -9,10 +9,25 @@ import { Plus } from 'lucide-react'
 
 import { useStore } from '@/store/useStore'
 import { STATUSES, type Ticket, type TicketStatus } from '@/types'
-import KanbanColumn from './KanbanColumn'
-import TicketCard   from './TicketCard'
-import TicketModal  from './TicketModal'
+import KanbanColumn        from './KanbanColumn'
+import TicketCard          from './TicketCard'
+import TicketModal         from './TicketModal'
 import FilterBar, { type ActiveFilters } from './FilterBar'
+import WeekendCleanupModal from './WeekendCleanupModal'
+
+// Returns the day-appropriate visible statuses:
+// on weekends replace Today with Saturday + Sunday; on weekdays keep Today.
+function getVisibleStatuses(hideDone: boolean) {
+  const dow = new Date().getDay() // 0=Sun, 6=Sat
+  const isWeekend = dow === 0 || dow === 6
+  return STATUSES.filter(s => {
+    if (s.id === 'done' && hideDone) return false
+    if (isWeekend && s.id === 'today')    return false  // swap out Today
+    if (!isWeekend && s.id === 'saturday') return false // keep on weekends only
+    if (!isWeekend && s.id === 'sunday')   return false
+    return true
+  })
+}
 
 const PRIORITY_ORDER: Record<string, number> = { P1: 0, P2: 1, P3: 2, P4: 3 }
 
@@ -44,7 +59,9 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
 }
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus, reorderColumn, deleteTicket, hideDone, newTicketTrigger, focusedColumn, setFocusedColumn } = useStore()
+  const { tickets, updateTicketStatus, reorderColumn, deleteTicket, hideDone,
+          newTicketTrigger, focusedColumn, setFocusedColumn,
+          weekendCleanupDate, setWeekendCleanupDate } = useStore()
 
   const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
@@ -52,6 +69,34 @@ export default function KanbanBoard() {
   const [editTicket,   setEditTicket]     = useState<Ticket | null>(null)
   const [filters,      setFilters]        = useState<ActiveFilters>({ priorities: [], epicIds: [], estimations: [], dueDate: null })
   const [search,       setSearch]         = useState('')
+  const [showCleanup,  setShowCleanup]    = useState(false)
+
+  // Weekend migration: if it's a weekend and there are orphaned 'today' tickets,
+  // move them to backlog so they stay visible and can be re-planned.
+  useEffect(() => {
+    const dow = new Date().getDay() // 0=Sun, 6=Sat
+    if (dow !== 6 && dow !== 0) return
+    const orphans = tickets.filter(t => t.status === 'today')
+    for (const t of orphans) updateTicketStatus(t.id, 'backlog')
+  }, []) // run once on mount
+
+  // Monday cleanup: if today is Monday and we haven't cleaned up yet, and there
+  // are leftover saturday/sunday tickets, open the cleanup modal.
+  useEffect(() => {
+    const dow = new Date().getDay()
+    const todayStr = new Date().toISOString().slice(0, 10)
+    if (dow !== 1) return                            // only on Mondays
+    if (weekendCleanupDate === todayStr) return      // already done today
+    const leftovers = tickets.filter(
+      t => !t.is_routine && (t.status === 'saturday' || t.status === 'sunday')
+    )
+    if (leftovers.length > 0) {
+      setShowCleanup(true)
+    } else {
+      // Nothing to clean up — mark done so we don't check again today
+      setWeekendCleanupDate(todayStr)
+    }
+  }, [])  // run once on mount
 
   // Open new-ticket modal when shortcut fires
   useEffect(() => {
@@ -152,7 +197,7 @@ export default function KanbanBoard() {
     setUndoProgress(0)
   }
 
-  const visibleStatuses = hideDone ? STATUSES.filter(s => s.id !== 'done') : STATUSES
+  const visibleStatuses = getVisibleStatuses(hideDone)
 
   // Use local copy during drag to enable optimistic moves
   const displayed = (activeTicket ? localTickets : tickets)
@@ -264,8 +309,21 @@ export default function KanbanBoard() {
       })
   }
 
+  const weekendLeftovers = tickets.filter(
+    t => !t.is_routine && (t.status === 'saturday' || t.status === 'sunday')
+  )
+
   return (
     <>
+      {showCleanup && weekendLeftovers.length > 0 && (
+        <WeekendCleanupModal
+          tickets={weekendLeftovers}
+          onClose={() => {
+            setShowCleanup(false)
+            setWeekendCleanupDate(new Date().toISOString().slice(0, 10))
+          }}
+        />
+      )}
       <FilterBar filters={filters} onChange={setFilters} search={search} onSearch={setSearch} />
 
       <DndContext

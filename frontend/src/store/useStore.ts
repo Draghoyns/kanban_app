@@ -60,6 +60,7 @@ interface AppStore {
   newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
   focusedColumn:        TicketStatus | null  // set by notification tap to scroll to column
   wipLimits:            Partial<Record<TicketStatus, number>>
+  weekendCleanupDate:   string | null  // YYYY-MM-DD of last Monday where cleanup ran
 
   setActiveTab:           (tab: 'kanban' | 'memo' | 'routine') => void
   setHideDone:            (v: boolean) => void
@@ -73,8 +74,9 @@ interface AppStore {
   setWipLimit:            (status: TicketStatus, limit: number | null) => void
   triggerNewTicket:       () => void
   triggerNewMemo:         () => void
-  setFocusedColumn:       (col: TicketStatus | null) => void
-  createTicket:           (data: TicketCreate) => Ticket
+  setFocusedColumn:         (col: TicketStatus | null) => void
+  setWeekendCleanupDate:    (date: string) => void
+  createTicket:             (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
   updateTicketStatus:     (id: number, status: TicketStatus, position?: number) => void
   reorderColumn:          (orderedIds: number[]) => void
@@ -108,6 +110,7 @@ export const useStore = create<AppStore>()(
       newMemoTrigger:       0,
       focusedColumn:        null,
       wipLimits:            {},
+      weekendCleanupDate:   null,
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
       setHideDone:             (v)     => set({ hideDone:             v }),
@@ -126,6 +129,7 @@ export const useStore = create<AppStore>()(
       triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
       triggerNewMemo:           ()      => set(s => ({ newMemoTrigger:   s.newMemoTrigger   + 1 })),
       setFocusedColumn:         (col)   => set({ focusedColumn: col }),
+      setWeekendCleanupDate:    (date)  => set({ weekendCleanupDate: date }),
       // ── Tickets ──────────────────────────────────────────────────────────
 
       createTicket: (data) => {
@@ -205,12 +209,15 @@ export const useStore = create<AppStore>()(
         }))
       },
 
-      // Spawns a backlog instance for every overdue routine template.
+      // Spawns a routine instance for every due template.
       // Safe to call every app launch — idempotent within a single calendar day.
       generateRoutineTickets: () => {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         const todayStr = today.toISOString()
+        const dow = today.getDay() // 0=Sun, 6=Sat
+        const targetStatus: TicketStatus =
+          dow === 6 ? 'saturday' : dow === 0 ? 'sunday' : 'today'
 
         const { tickets } = get()
         const dueTo        = tickets.filter(t => isDue(t, today))
@@ -220,11 +227,11 @@ export const useStore = create<AppStore>()(
           id:                 genId() + i,
           title:              t.title,
           description:        t.description,
-          status:             'today',
+          status:             targetStatus,
           priority:           t.priority ?? null,
           estimation:         t.estimation ?? null,
           due_date:           null,
-          position:           tickets.filter(x => x.status === 'today').length + i,
+          position:           tickets.filter(x => x.status === targetStatus).length + i,
           is_routine:         false,
           frequency_type:     null,
           frequency_days:     null,
@@ -321,6 +328,7 @@ export const useStore = create<AppStore>()(
         notificationsEnabled: s.notificationsEnabled,
         backendUrl:           s.backendUrl,
         wipLimits:            s.wipLimits,
+        weekendCleanupDate:   s.weekendCleanupDate,
         // sidebarOpen, newTicketTrigger, newMemoTrigger intentionally excluded
       }),
     }

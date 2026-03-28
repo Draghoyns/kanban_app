@@ -1,4 +1,4 @@
-export type TicketStatus   = 'backlog' | 'in_progress' | 'blocked' | 'today' | 'done'
+export type TicketStatus   = 'backlog' | 'in_progress' | 'blocked' | 'today' | 'saturday' | 'sunday' | 'done'
 export type FrequencyType  = 'daily' | 'weekly' | 'interval' | 'weekdays'
 export type PriorityLevel  = 'P1' | 'P2' | 'P3' | 'P4'
 export type EstimationSize = '1' | '2' | '3' | '5' | '8'
@@ -108,6 +108,8 @@ export const STATUSES: { id: TicketStatus; label: string; color: string; border:
   { id: 'in_progress', label: 'In Progress', color: 'text-blue-400',    border: 'border-blue-500'    },
   { id: 'blocked',     label: 'Blocked',     color: 'text-rose-400',    border: 'border-rose-500'    },
   { id: 'today',       label: 'Today',       color: 'text-amber-400',   border: 'border-amber-500'   },
+  { id: 'saturday',    label: 'Saturday',    color: 'text-violet-400',  border: 'border-violet-500'  },
+  { id: 'sunday',      label: 'Sunday',      color: 'text-violet-400',  border: 'border-violet-500'  },
   { id: 'done',        label: 'Done',        color: 'text-emerald-400', border: 'border-emerald-500' },
 ]
 

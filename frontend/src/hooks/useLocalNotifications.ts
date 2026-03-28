@@ -83,16 +83,19 @@ export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticke
       await LocalNotifications.cancel({ notifications: pending.notifications })
     }
 
-    // Build dynamic content based on today column state
-    const todayTickets = tickets.filter(t => t.status === 'today')
-    const n = todayTickets.length
-    const column = n === 0 ? 'backlog' : 'today'
+    // Build dynamic content: use saturday/sunday column on weekends, today otherwise
+    const dow = new Date().getDay() // 0=Sun, 6=Sat
+    const colStatus = dow === 6 ? 'saturday' : dow === 0 ? 'sunday' : 'today'
+    const colLabel  = dow === 6 ? 'Saturday' : dow === 0 ? 'Sunday' : 'Today'
+    const dayTickets = tickets.filter(t => t.status === colStatus)
+    const n = dayTickets.length
+    const column = n === 0 ? 'backlog' : colStatus
     const title  = n === 0
       ? '🍒 Plan your day'
-      : `🍒 ${n} task${n !== 1 ? 's' : ''} today`
+      : `🍒 ${n} task${n !== 1 ? 's' : ''} for ${colLabel}`
     const body   = n === 0
-      ? 'Your today column is empty — check your backlog'
-      : todayTickets.slice(0, 3).map(t => t.title).join(', ') + (n > 3 ? ` +${n - 3} more` : '')
+      ? `Your ${colLabel} column is empty — check your backlog`
+      : dayTickets.slice(0, 3).map(t => t.title).join(', ') + (n > 3 ? ` +${n - 3} more` : '')
 
     const at = new Date()
     at.setHours(hour, minute, 0, 0)
