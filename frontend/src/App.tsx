@@ -15,10 +15,18 @@ export default function App() {
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
 
-  // Android back button: close sidebar or topmost modal, else minimize
+  // Android back button: use pushState sentinel so Capacitor routes the hardware
+  // back button through WebView history (synchronous popstate) instead of the
+  // async plugin bridge. This avoids the race between addListener registration
+  // and the first back-press.
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
-    const promise = CapApp.addListener('backButton', () => {
+    // Push a sentinel so WebView.canGoBack() is true → Capacitor calls goBack()
+    // → popstate fires synchronously in JS whenever back is pressed.
+    window.history.pushState({ capBack: true }, '')
+    function onPopState() {
+      // Re-push immediately so canGoBack() stays true for the next press.
+      window.history.pushState({ capBack: true }, '')
       if (useStore.getState().sidebarOpen) {
         useStore.getState().setSidebarOpen(false)
         return
@@ -27,8 +35,9 @@ export default function App() {
         new CustomEvent('app:backButton', { cancelable: true, bubbles: false })
       )
       if (!handled) CapApp.minimizeApp()
-    })
-    return () => { promise.then(h => h.remove()).catch(() => {}) }
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
   // Listen for notification taps: navigate to the indicated column
