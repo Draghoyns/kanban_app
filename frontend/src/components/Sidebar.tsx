@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Pencil, Check } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Monitor, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Pencil, Check } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -361,7 +361,7 @@ export default function Sidebar() {
                 </div>
               </button>
 
-              {/* Theme — sun/moon icon toggle */}
+              {/* Theme — sun/moon/system icon toggle */}
               <div className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg border border-slate-700">
                 <span className="text-xs text-slate-300">Theme</span>
                 <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
@@ -386,6 +386,17 @@ export default function Sidebar() {
                     }`}
                   >
                     <Moon size={14} />
+                  </button>
+                  <button
+                    onClick={() => setTheme('system')}
+                    title="Follow system"
+                    className={`p-1.5 rounded-md transition-colors ${
+                      theme === 'system'
+                        ? 'bg-slate-500/30 text-slate-200'
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    <Monitor size={14} />
                   </button>
                 </div>
               </div>

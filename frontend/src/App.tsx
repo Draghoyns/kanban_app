@@ -66,13 +66,19 @@ export default function App() {
     }
   }, [])
 
-  // Apply theme class to root html element
+  // Apply theme class to root html element; 'system' respects prefers-color-scheme
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light')
-    } else {
-      document.documentElement.classList.remove('light')
+    const root = document.documentElement
+    function applyTheme(t: 'dark' | 'light' | 'system') {
+      const isDark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      root.classList.toggle('light', !isDark)
     }
+    applyTheme(theme)
+    if (theme !== 'system') return
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = () => applyTheme('system')
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [theme])
 
   // Sync accent color CSS custom property
