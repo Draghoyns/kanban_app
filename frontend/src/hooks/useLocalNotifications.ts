@@ -95,7 +95,7 @@ export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticke
       : `🍒 ${n} task${n !== 1 ? 's' : ''} for ${colLabel}`
     const body   = n === 0
       ? `Your ${colLabel} column is empty — check your backlog`
-      : dayTickets.slice(0, 3).map(t => t.title).join(', ') + (n > 3 ? ` +${n - 3} more` : '')
+      : dayTickets.map(t => `• ${t.title}`).join('\n')
 
     const at = new Date()
     at.setHours(hour, minute, 0, 0)
