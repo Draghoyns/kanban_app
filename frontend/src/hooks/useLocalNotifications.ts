@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
+import type { Ticket } from '@/types'
 
 const NOTIFICATION_ID = 1
 
 export function useLocalNotifications() {
   const [loading, setLoading] = useState(false)
-  const { notificationHour, notificationMinute, notificationsEnabled: enabled, setNotificationsEnabled: setEnabled } = useStore()
+  const { notificationHour, notificationMinute, notificationsEnabled: enabled, setNotificationsEnabled: setEnabled, tickets } = useStore()
 
   useEffect(() => {
     // Sync permission state on mount (native only); on web the store value is canonical.
@@ -34,7 +35,7 @@ export function useLocalNotifications() {
           }
         } catch { /* plugin doesn't support this on older Android — proceed */ }
         setEnabled(true)
-        await scheduleDailyReminder(notificationHour, notificationMinute)
+        await scheduleDailyReminder(notificationHour, notificationMinute, tickets)
       } else {
         // Web: no actual push notifications on non-native platform.
         // Optionally surface browser permission dialog, but always toggle state.
@@ -64,14 +65,14 @@ export function useLocalNotifications() {
   /** Re-schedule the notification at a new hour+minute (call after user changes the time). */
   async function reschedule(hour: number, minute: number) {
     if (!enabled) return
-    await scheduleDailyReminder(hour, minute)
+    await scheduleDailyReminder(hour, minute, tickets)
   }
 
   return { enabled, loading, enable, disable, reschedule }
 }
 
 /** Schedule (or reschedule) a single repeating daily reminder at the given hour and minute. */
-export async function scheduleDailyReminder(hour = 9, minute = 0): Promise<void> {
+export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticket[] = []): Promise<void> {
   if (!Capacitor.isNativePlatform()) return
   try {
     const { LocalNotifications } = await import('@capacitor/local-notifications')
@@ -82,6 +83,17 @@ export async function scheduleDailyReminder(hour = 9, minute = 0): Promise<void>
       await LocalNotifications.cancel({ notifications: pending.notifications })
     }
 
+    // Build dynamic content based on today column state
+    const todayTickets = tickets.filter(t => t.status === 'today')
+    const n = todayTickets.length
+    const column = n === 0 ? 'backlog' : 'today'
+    const title  = n === 0
+      ? '🍒 Plan your day'
+      : `🍒 ${n} task${n !== 1 ? 's' : ''} today`
+    const body   = n === 0
+      ? 'Your today column is empty — check your backlog'
+      : todayTickets.slice(0, 3).map(t => t.title).join(', ') + (n > 3 ? ` +${n - 3} more` : '')
+
     const at = new Date()
     at.setHours(hour, minute, 0, 0)
     // If the target time already passed today, start tomorrow
@@ -90,10 +102,12 @@ export async function scheduleDailyReminder(hour = 9, minute = 0): Promise<void>
     await LocalNotifications.schedule({
       notifications: [{
         id:        NOTIFICATION_ID,
-        title:     'Kanban Memo',
-        body:      'Check your routine tasks for today',
+        title,
+        body,
         schedule:  { at, every: 'day', allowWhileIdle: true },
-        iconColor: '#f59e0b',
+        smallIcon: 'ic_stat_cherry',
+        iconColor: '#6366f1',
+        extra:     { column },
       }],
     })
   } catch (err) {

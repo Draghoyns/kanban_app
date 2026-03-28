@@ -22,7 +22,7 @@ export default function KanbanColumn({ status, tickets, onAddTicket, onEditTicke
   const overWip         = wipLimit != null && nonRoutineCount > wipLimit
 
   return (
-    <div className="flex flex-col w-[80vw] md:w-[360px] shrink-0 min-h-0">
+    <div className="flex flex-col w-[80vw] md:w-[360px] shrink-0 min-h-0" data-col={status.id}>
       {/* Column header */}
       <div className={`flex items-center justify-between px-3 py-2 mb-2 rounded-lg border-l-2 ${status.border} ${overWip ? 'bg-amber-500/15' : 'bg-slate-500/10'}`}>
         <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>

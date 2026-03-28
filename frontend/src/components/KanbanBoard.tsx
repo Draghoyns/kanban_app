@@ -44,7 +44,7 @@ function ticketMatchesFilter(ticket: Ticket, filters: ActiveFilters): boolean {
 }
 
 export default function KanbanBoard() {
-  const { tickets, updateTicketStatus, reorderColumn, deleteTicket, hideDone, newTicketTrigger } = useStore()
+  const { tickets, updateTicketStatus, reorderColumn, deleteTicket, hideDone, newTicketTrigger, focusedColumn, setFocusedColumn } = useStore()
 
   const [activeTicket, setActiveTicket]   = useState<Ticket | null>(null)
   const [localTickets, setLocalTickets]   = useState<Ticket[]>([])
@@ -57,6 +57,14 @@ export default function KanbanBoard() {
   useEffect(() => {
     if (newTicketTrigger > 0) setCreateStatus('backlog')
   }, [newTicketTrigger])
+
+  // Scroll to the column requested by a notification tap
+  useEffect(() => {
+    if (!focusedColumn) return
+    const el = document.querySelector(`[data-col="${focusedColumn}"]`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' })
+    setFocusedColumn(null)
+  }, [focusedColumn])
 
   // Undo toast state (mark-done)
   const [undoTicket, setUndoTicket]     = useState<{ ticket: Ticket; prevStatus: TicketStatus } | null>(null)

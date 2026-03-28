@@ -58,6 +58,7 @@ interface AppStore {
   backendUrl:           string
   newTicketTrigger:     number   // incremented to open new-ticket modal via shortcut
   newMemoTrigger:       number   // incremented to open new-memo modal via shortcut
+  focusedColumn:        TicketStatus | null  // set by notification tap to scroll to column
   wipLimits:            Partial<Record<TicketStatus, number>>
 
   setActiveTab:           (tab: 'kanban' | 'memo' | 'routine') => void
@@ -72,6 +73,7 @@ interface AppStore {
   setWipLimit:            (status: TicketStatus, limit: number | null) => void
   triggerNewTicket:       () => void
   triggerNewMemo:         () => void
+  setFocusedColumn:       (col: TicketStatus | null) => void
   createTicket:           (data: TicketCreate) => Ticket
   updateTicket:           (id: number, data: TicketUpdate) => void
   updateTicketStatus:     (id: number, status: TicketStatus, position?: number) => void
@@ -104,6 +106,7 @@ export const useStore = create<AppStore>()(
       backendUrl:           'http://192.168.1.4:8000',
       newTicketTrigger:     0,
       newMemoTrigger:       0,
+      focusedColumn:        null,
       wipLimits:            {},
 
       setActiveTab:            (tab)   => set({ activeTab:            tab }),
@@ -122,6 +125,7 @@ export const useStore = create<AppStore>()(
       })),
       triggerNewTicket:         ()      => set(s => ({ newTicketTrigger: s.newTicketTrigger + 1 })),
       triggerNewMemo:           ()      => set(s => ({ newMemoTrigger:   s.newMemoTrigger   + 1 })),
+      setFocusedColumn:         (col)   => set({ focusedColumn: col }),
       // ── Tickets ──────────────────────────────────────────────────────────
 
       createTicket: (data) => {

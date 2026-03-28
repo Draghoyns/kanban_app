@@ -9,10 +9,27 @@ import Sidebar     from '@/components/Sidebar'
 
 export default function App() {
   const { activeTab, generateRoutineTickets, sidebarOpen, theme, accentColor,
-          setActiveTab, triggerNewTicket, triggerNewMemo } = useStore()
+          setActiveTab, triggerNewTicket, triggerNewMemo, setFocusedColumn } = useStore()
 
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
+
+  // Listen for notification taps: navigate to the indicated column
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    let cleanup: (() => void) | undefined
+    import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
+      const handle = LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+        const column = action.notification.extra?.column
+        if (column) {
+          setActiveTab('kanban')
+          setFocusedColumn(column)
+        }
+      })
+      cleanup = () => { handle.then(h => h.remove()) }
+    }).catch(() => {})
+    return () => { cleanup?.() }
+  }, [])
 
   // Keyboard shortcuts — only fire when no input/textarea/select is focused
   useEffect(() => {
