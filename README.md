@@ -262,29 +262,29 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 - [ ] Multiple boards (e.g. Work, Personal, Side projects)
 - [ ] Custom columns (rename, add, delete, reorder)
 - [ ] Archive column for done tickets instead of deleting
-- [ ] Light/dark mode follows system automatically (currently manual)
+- [x] Light/dark mode follows system automatically (currently manual)
 - [ ] Zoom out the phone icon to show the whole cherry
-- [ ] Android back button closes open modal/sidebar instead of quitting the app
+- [x] Android back button closes open modal/sidebar instead of quitting the app
 
 ### EPICs
 - [ ] EPIC progress bar showing % of tickets done (opt-in per EPIC at creation time)
-- [ ] Prevent duplicate EPIC names
-- [ ] Edit EPIC name and color from the sidebar
+- [x] Prevent duplicate EPIC names
+- [x] Edit EPIC name and color from the sidebar
 
 ### Memos
 - [ ] Attach a memo to a specific ticket
-- [ ] EPIC filters below the search bar
+- [x] EPIC filters below the search bar
 
 ### Routines
 - [ ] Postpone / skip a single routine instance without deleting the routine
-- [ ] Prune done routine instances older than N days (unbounded store growth)
-- [ ] Dynamic countdown badge on routine tickets (X days left before next occurrence) with ability to adjust the due date per instance
+- [x] Prune done routine instances older than N days (unbounded store growth)
+- [x] Dynamic countdown badge on routine tickets (X days left before next occurrence)
 
 ### Notifications
 - [ ] Per-ticket reminders (remind me on due date)
-- [ ] Remove notifications button from sidebar — bell icon in header only
+- [x] Remove notifications button from sidebar — bell icon in header only
 - [ ] Notification tap switches to Kanban tab before scrolling to column
-- [ ] Show ticket titles line-by-line in the notification body; make it expandable (Android BigTextStyle / iOS) to reveal the full list
+- [x] Show ticket titles line-by-line in the notification body
 
 ### Sync / data
 - [ ] Conflict resolution when syncing from multiple devices
