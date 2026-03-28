@@ -103,17 +103,6 @@ export default function KanbanBoard() {
     if (newTicketTrigger > 0) setCreateStatus('backlog')
   }, [newTicketTrigger])
 
-  // Android back button: close topmost open modal
-  useEffect(() => {
-    function onBack(e: Event) {
-      if (showCleanup)        { setShowCleanup(false);  e.preventDefault(); return }
-      if (editTicket !== null) { setEditTicket(null);   e.preventDefault(); return }
-      if (createStatus !== null) { setCreateStatus(null); e.preventDefault(); return }
-    }
-    window.addEventListener('app:backButton', onBack)
-    return () => window.removeEventListener('app:backButton', onBack)
-  }, [showCleanup, editTicket, createStatus])
-
   // Scroll to the column requested by a notification tap
   useEffect(() => {
     if (!focusedColumn) return

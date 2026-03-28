@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Monitor, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Pencil, Check } from 'lucide-react'
+import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -63,7 +63,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 
 export default function Sidebar() {
   const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, updateTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit } = useStore()
-  const { enabled, enable, disable, reschedule } = useLocalNotifications()
+  const { reschedule } = useLocalNotifications()
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
   const importRef = useRef<HTMLInputElement>(null)
@@ -141,18 +141,19 @@ export default function Sidebar() {
 
   const [newEpicName,   setNewEpicName]   = useState('')
   const [newEpicColor,  setNewEpicColor]  = useState('#ec4899')
-  const [epicDupeError, setEpicDupeError] = useState(false)
+  const [epicDupeError, setEpicDupeError] = useState<string | null>(null)
 
   // Inline edit state
   const [editingEpicId,    setEditingEpicId]    = useState<number | null>(null)
   const [editingEpicName,  setEditingEpicName]  = useState('')
   const [editingEpicColor, setEditingEpicColor] = useState('#ec4899')
+  const [editEpicDupeError, setEditEpicDupeError] = useState<string | null>(null)
 
   function handleAddEpic() {
     const name = newEpicName.trim()
     if (!name) return
     const isDupe = tags.some(t => t.name.trim().toLowerCase() === name.toLowerCase())
-    if (isDupe) { setEpicDupeError(true); setTimeout(() => setEpicDupeError(false), 2000); return }
+    if (isDupe) { setEpicDupeError('An EPIC with this name already exists'); return }
     createTag({ name, color: newEpicColor })
     setNewEpicName('')
   }
@@ -161,12 +162,15 @@ export default function Sidebar() {
     setEditingEpicId(id)
     setEditingEpicName(name)
     setEditingEpicColor(color)
+    setEditEpicDupeError(null)
   }
 
   function commitEditEpic() {
     if (editingEpicId === null) return
     const name = editingEpicName.trim()
     if (!name) return
+    const isDupe = tags.some(t => t.id !== editingEpicId && t.name.trim().toLowerCase() === name.toLowerCase())
+    if (isDupe) { setEditEpicDupeError('Name already exists'); return }
     updateTag(editingEpicId, { name, color: editingEpicColor })
     setEditingEpicId(null)
   }
@@ -295,19 +299,8 @@ export default function Sidebar() {
           >
             <p className="text-xs text-slate-400 leading-relaxed mb-3">
               A daily reminder fires at the time you choose below.
-              The bell icon in the header also toggles this.
+              The bell icon in the header toggles notifications on/off.
             </p>
-            <button
-              onClick={enabled ? disable : enable}
-              className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium border transition-colors mb-3"
-              style={enabled
-                ? { borderColor: 'color-mix(in srgb, var(--accent) 70%, black)', color: 'var(--accent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)' }
-                : { borderColor: '#475569', color: '#94a3b8' }
-              }
-            >
-              {enabled ? <Bell size={13} /> : <BellOff size={13} />}
-              {enabled ? 'Notifications on — tap to disable' : 'Notifications off — tap to enable'}
-            </button>
             {/* Hour + minute picker */}
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-700">
               <span className="text-xs text-slate-300">Reminder time</span>
@@ -386,17 +379,6 @@ export default function Sidebar() {
                     }`}
                   >
                     <Moon size={14} />
-                  </button>
-                  <button
-                    onClick={() => setTheme('system')}
-                    title="Follow system"
-                    className={`p-1.5 rounded-md transition-colors ${
-                      theme === 'system'
-                        ? 'bg-slate-500/30 text-slate-200'
-                        : 'text-slate-500 hover:text-slate-300'
-                    }`}
-                  >
-                    <Monitor size={14} />
                   </button>
                 </div>
               </div>
@@ -511,9 +493,9 @@ export default function Sidebar() {
                         <div className="flex items-center gap-1.5">
                           <input
                             autoFocus
-                            className="input flex-1 h-7 text-xs"
+                            className={`input flex-1 h-7 text-xs ${editEpicDupeError ? 'border-rose-500' : ''}`}
                             value={editingEpicName}
-                            onChange={e => setEditingEpicName(e.target.value)}
+                            onChange={e => { setEditingEpicName(e.target.value); setEditEpicDupeError(null) }}
                             onKeyDown={e => { if (e.key === 'Enter') commitEditEpic(); if (e.key === 'Escape') setEditingEpicId(null) }}
                           />
                           <button onClick={commitEditEpic} className="shrink-0 text-emerald-400 hover:text-emerald-300 p-0.5 rounded" title="Save">
@@ -523,27 +505,29 @@ export default function Sidebar() {
                             <X size={12} />
                           </button>
                         </div>
+                        {editEpicDupeError && (
+                          <p className="text-[10px] text-rose-400 flex items-center gap-1 mt-0.5">
+                            <AlertCircle size={9} /> {editEpicDupeError}
+                          </p>
+                        )}
                       </div>
                     ) : (
                       /* ── Normal row ── */
                       <div className="flex items-center justify-between gap-2 group">
-                        <TagBadge tag={tag} small />
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => startEditEpic(tag.id, tag.name, tag.color)}
-                            title="Edit EPIC"
-                            className="text-slate-500 hover:text-slate-300 transition-colors p-0.5 rounded"
-                          >
-                            <Pencil size={11} />
-                          </button>
-                          <button
-                            onClick={() => deleteTag(tag.id)}
-                            title="Delete EPIC"
-                            className="text-slate-600 hover:text-rose-400 transition-colors p-0.5 rounded"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
+                        <button
+                          className="flex-1 text-left min-w-0"
+                          onClick={() => startEditEpic(tag.id, tag.name, tag.color)}
+                          title="Tap to edit"
+                        >
+                          <TagBadge tag={tag} small />
+                        </button>
+                        <button
+                          onClick={() => deleteTag(tag.id)}
+                          title="Delete EPIC"
+                          className="shrink-0 text-slate-600 hover:text-rose-400 transition-colors p-0.5 rounded opacity-0 group-hover:opacity-100"
+                        >
+                          <X size={12} />
+                        </button>
                       </div>
                     )}
                   </li>
@@ -568,9 +552,9 @@ export default function Sidebar() {
             <div className="flex items-center gap-2">
               <input
                 className={`input flex-1 h-8 text-xs ${epicDupeError ? 'border-rose-500' : ''}`}
-                placeholder={epicDupeError ? 'Name already exists' : 'New EPIC name…'}
+                placeholder="New EPIC name…"
                 value={newEpicName}
-                onChange={e => { setNewEpicName(e.target.value); setEpicDupeError(false) }}
+                onChange={e => { setNewEpicName(e.target.value); setEpicDupeError(null) }}
                 onKeyDown={e => e.key === 'Enter' && handleAddEpic()}
               />
               <input
@@ -587,6 +571,11 @@ export default function Sidebar() {
                 <Plus size={13} />
               </button>
             </div>
+            {epicDupeError && (
+              <p className="text-xs text-rose-400 mt-1.5 flex items-center gap-1">
+                <AlertCircle size={10} /> {epicDupeError}
+              </p>
+            )}
           </Section>
 
           {/* ── Data ─────────────────────────────────────────────────── */}

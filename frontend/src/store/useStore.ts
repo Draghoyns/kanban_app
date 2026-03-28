@@ -49,7 +49,7 @@ interface AppStore {
   tags:        Tag[]
   activeTab:        'kanban' | 'memo' | 'routine'
   hideDone:         boolean
-  theme:            'dark' | 'light' | 'system'
+  theme:            'dark' | 'light'
   accentColor:      string
   notificationHour:     number
   notificationMinute:   number
@@ -64,7 +64,7 @@ interface AppStore {
 
   setActiveTab:           (tab: 'kanban' | 'memo' | 'routine') => void
   setHideDone:            (v: boolean) => void
-  setTheme:               (theme: 'dark' | 'light' | 'system') => void
+  setTheme:               (theme: 'dark' | 'light') => void
   setAccentColor:         (color: string) => void
   setNotificationHour:    (hour: number) => void
   setNotificationMinute:  (minute: number) => void

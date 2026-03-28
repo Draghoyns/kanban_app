@@ -34,7 +34,7 @@ function descPreview(raw: string): string {
 }
 
 /** Compute days until next routine occurrence for a routine template ticket */
-function routineCountdown(ticket: Ticket): { label: string; cls: string } | null {
+export function routineCountdown(ticket: Ticket): { label: string; cls: string } | null {
   if (!ticket.is_routine) return null
   const today = new Date()
   today.setHours(0, 0, 0, 0)

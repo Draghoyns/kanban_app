@@ -4,6 +4,7 @@ import { useStore } from '@/store/useStore'
 import type { Ticket } from '@/types'
 import { WEEKDAYS } from '@/types'
 import TicketModal from './TicketModal'
+import { routineCountdown } from './TicketCard'
 
 function freqLabel(t: Ticket): string {
   switch (t.frequency_type) {
@@ -100,6 +101,14 @@ export default function RoutineTab() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{template.title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{freqLabel(template)}</p>
+                  {(() => {
+                    const cd = routineCountdown(template)
+                    return cd ? (
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border mt-1 ${cd.cls}`}>
+                        {cd.label}
+                      </span>
+                    ) : null
+                  })()}
                   {template.start_date && (
                     <p className="text-xs text-slate-600 mt-0.5">
                       From {new Date(template.start_date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
