@@ -221,8 +221,22 @@ export const useStore = create<AppStore>()(
           dow === 6 ? 'saturday' : dow === 0 ? 'sunday' : 'today'
 
         const { tickets } = get()
-        const dueTo        = tickets.filter(t => isDue(t, today))
-        if (dueTo.length === 0) return []
+
+        // Prune done routine instances older than 30 days
+        const cutoff = new Date(today)
+        cutoff.setDate(cutoff.getDate() - 30)
+        const pruned = new Set(
+          tickets
+            .filter(t => t.parent_id != null && !t.is_routine && t.status === 'done')
+            .filter(t => new Date(t.updated_at) < cutoff)
+            .map(t => t.id)
+        )
+
+        const dueTo = tickets.filter(t => isDue(t, today))
+        if (dueTo.length === 0) {
+          if (pruned.size > 0) set(s => ({ tickets: s.tickets.filter(t => !pruned.has(t.id)) }))
+          return []
+        }
 
         const instances: Ticket[] = dueTo.map((t, i) => ({
           id:                 genId() + i,
@@ -247,8 +261,10 @@ export const useStore = create<AppStore>()(
 
         set(s => ({
           tickets: [
-            // Stamp last_generated on each template
-            ...s.tickets.map(t => dueTo.find(d => d.id === t.id) ? { ...t, last_generated: todayStr } : t),
+            // Stamp last_generated on each template, remove pruned done instances
+            ...s.tickets
+              .filter(t => !pruned.has(t.id))
+              .map(t => dueTo.find(d => d.id === t.id) ? { ...t, last_generated: todayStr } : t),
             ...instances,
           ],
         }))

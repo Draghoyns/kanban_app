@@ -33,7 +33,70 @@ function descPreview(raw: string): string {
     .trim()
 }
 
-/** Compute due date display label and Tailwind classes */
+/** Compute days until next routine occurrence for a routine template ticket */
+function routineCountdown(ticket: Ticket): { label: string; cls: string } | null {
+  if (!ticket.is_routine) return null
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  // Determine next due date
+  let next: Date | null = null
+
+  if (!ticket.last_generated) {
+    // Never generated — due now
+    return { label: 'due now', cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
+  }
+
+  const last = new Date(ticket.last_generated)
+  last.setHours(0, 0, 0, 0)
+
+  switch (ticket.frequency_type) {
+    case 'daily': {
+      next = new Date(last)
+      next.setDate(next.getDate() + 1)
+      break
+    }
+    case 'weekdays': {
+      next = new Date(last)
+      next.setDate(next.getDate() + 1)
+      while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1)
+      break
+    }
+    case 'weekly': {
+      const names = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']
+      const days = ticket.frequency_days ?? []
+      if (days.length === 0) return null
+      next = new Date(today)
+      next.setDate(next.getDate() + 1)
+      for (let i = 0; i < 8; i++) {
+        if (days.includes(names[next.getDay()])) break
+        next.setDate(next.getDate() + 1)
+      }
+      break
+    }
+    case 'interval': {
+      const interval = ticket.frequency_interval ?? 1
+      let ref = last
+      if (ticket.start_date) {
+        const start = new Date(ticket.start_date)
+        start.setHours(0, 0, 0, 0)
+        if (start > last) ref = start
+      }
+      next = new Date(ref)
+      next.setDate(next.getDate() + interval)
+      break
+    }
+    default: return null
+  }
+
+  if (!next) return null
+  const diff = Math.round((next.getTime() - today.getTime()) / 86_400_000)
+  if (diff <= 0) return { label: 'due now', cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
+  if (diff === 1) return { label: 'in 1d', cls: 'bg-yellow-500/15 text-yellow-600 border-yellow-500/40' }
+  return { label: `in ${diff}d`, cls: 'bg-slate-500/15 text-slate-400 border-slate-500/40' }
+}
+
+
 function dueDateBadge(dueDate: string): { label: string; cls: string } {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -127,12 +190,20 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
                 </span>
               )
             })()}
-            {ticket.is_routine && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/40">
-                <RefreshCw size={9} />
-                routine
-              </span>
-            )}
+            {ticket.is_routine && (() => {
+              const countdown = routineCountdown(ticket)
+              return (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 border border-amber-500/40">
+                  <RefreshCw size={9} />
+                  routine
+                  {countdown && (
+                    <span className={`ml-0.5 px-1 py-0 rounded text-[9px] font-semibold border ${countdown.cls}`}>
+                      {countdown.label}
+                    </span>
+                  )}
+                </span>
+              )
+            })()}
             {ticket.parent_id != null && !ticket.is_routine && (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-500/15 text-slate-500 border border-slate-500/40">
                 <GitBranch size={9} />
