@@ -21,6 +21,16 @@ export default function MemoTab() {
     if (newMemoTrigger > 0) setShowModal(true)
   }, [newMemoTrigger])
 
+  // Android back button: close open memo modal
+  useEffect(() => {
+    function onBack(e: Event) {
+      if (editMemo !== null) { setEditMemo(null); e.preventDefault(); return }
+      if (showModal)         { setShowModal(false); e.preventDefault(); return }
+    }
+    window.addEventListener('app:backButton', onBack)
+    return () => window.removeEventListener('app:backButton', onBack)
+  }, [editMemo, showModal])
+
   const filtered = memos.filter(m => {
     const matchTag    = filterTag == null || m.tags.some(t => t.id === filterTag)
     const matchSearch = !search || m.title.toLowerCase().includes(search.toLowerCase())

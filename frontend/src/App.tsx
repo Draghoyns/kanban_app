@@ -14,6 +14,24 @@ export default function App() {
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
 
+  // Android back button: close sidebar or topmost modal, else minimize
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    import('@capacitor/app').then(({ App: CapApp }) => {
+      CapApp.addListener('backButton', () => {
+        if (useStore.getState().sidebarOpen) {
+          useStore.getState().setSidebarOpen(false)
+          return
+        }
+        // Let whichever component has an open modal handle it
+        const handled = !window.dispatchEvent(
+          new CustomEvent('app:backButton', { cancelable: true, bubbles: false })
+        )
+        if (!handled) CapApp.minimizeApp()
+      })
+    }).catch(() => {})
+  }, [])
+
   // Listen for notification taps: navigate to the indicated column
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
