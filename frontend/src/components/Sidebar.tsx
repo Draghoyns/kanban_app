@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2 } from 'lucide-react'
+import { X, Bell, BellOff, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Pencil, Check } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -62,7 +62,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, updateTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit } = useStore()
   const { enabled, enable, disable, reschedule } = useLocalNotifications()
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
@@ -139,13 +139,36 @@ export default function Sidebar() {
     reader.readAsText(file)
   }
 
-  const [newEpicName,  setNewEpicName]  = useState('')
-  const [newEpicColor, setNewEpicColor] = useState('#ec4899')
+  const [newEpicName,   setNewEpicName]   = useState('')
+  const [newEpicColor,  setNewEpicColor]  = useState('#ec4899')
+  const [epicDupeError, setEpicDupeError] = useState(false)
+
+  // Inline edit state
+  const [editingEpicId,    setEditingEpicId]    = useState<number | null>(null)
+  const [editingEpicName,  setEditingEpicName]  = useState('')
+  const [editingEpicColor, setEditingEpicColor] = useState('#ec4899')
 
   function handleAddEpic() {
-    if (!newEpicName.trim()) return
-    createTag({ name: newEpicName.trim(), color: newEpicColor })
+    const name = newEpicName.trim()
+    if (!name) return
+    const isDupe = tags.some(t => t.name.trim().toLowerCase() === name.toLowerCase())
+    if (isDupe) { setEpicDupeError(true); setTimeout(() => setEpicDupeError(false), 2000); return }
+    createTag({ name, color: newEpicColor })
     setNewEpicName('')
+  }
+
+  function startEditEpic(id: number, name: string, color: string) {
+    setEditingEpicId(id)
+    setEditingEpicName(name)
+    setEditingEpicColor(color)
+  }
+
+  function commitEditEpic() {
+    if (editingEpicId === null) return
+    const name = editingEpicName.trim()
+    if (!name) return
+    updateTag(editingEpicId, { name, color: editingEpicColor })
+    setEditingEpicId(null)
   }
 
   const [open, setOpen] = useState<Record<string, boolean>>({
@@ -450,15 +473,68 @@ export default function Sidebar() {
             ) : (
               <ul className="space-y-1.5 mb-3">
                 {tags.map(tag => (
-                  <li key={tag.id} className="flex items-center justify-between gap-2">
-                    <TagBadge tag={tag} small />
-                    <button
-                      onClick={() => deleteTag(tag.id)}
-                      title="Delete EPIC"
-                      className="shrink-0 text-slate-600 hover:text-rose-400 transition-colors p-0.5 rounded"
-                    >
-                      <X size={12} />
-                    </button>
+                  <li key={tag.id}>
+                    {editingEpicId === tag.id ? (
+                      /* ── Inline edit row ── */
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-wrap gap-1">
+                          {EPIC_COLOR_PRESETS.map(p => (
+                            <button
+                              key={p.color}
+                              title={p.name}
+                              onClick={() => setEditingEpicColor(p.color)}
+                              className="w-4 h-4 rounded-full border-2 transition-transform hover:scale-110"
+                              style={{
+                                backgroundColor: p.color,
+                                borderColor: editingEpicColor === p.color ? 'white' : 'transparent',
+                              }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            className="w-4 h-4 rounded-full border-0 cursor-pointer p-0 bg-transparent shrink-0"
+                            value={editingEpicColor}
+                            onChange={e => setEditingEpicColor(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            autoFocus
+                            className="input flex-1 h-7 text-xs"
+                            value={editingEpicName}
+                            onChange={e => setEditingEpicName(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') commitEditEpic(); if (e.key === 'Escape') setEditingEpicId(null) }}
+                          />
+                          <button onClick={commitEditEpic} className="shrink-0 text-emerald-400 hover:text-emerald-300 p-0.5 rounded" title="Save">
+                            <Check size={13} />
+                          </button>
+                          <button onClick={() => setEditingEpicId(null)} className="shrink-0 text-slate-500 hover:text-slate-300 p-0.5 rounded" title="Cancel">
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* ── Normal row ── */
+                      <div className="flex items-center justify-between gap-2 group">
+                        <TagBadge tag={tag} small />
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => startEditEpic(tag.id, tag.name, tag.color)}
+                            title="Edit EPIC"
+                            className="text-slate-500 hover:text-slate-300 transition-colors p-0.5 rounded"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                          <button
+                            onClick={() => deleteTag(tag.id)}
+                            title="Delete EPIC"
+                            className="text-slate-600 hover:text-rose-400 transition-colors p-0.5 rounded"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -480,10 +556,10 @@ export default function Sidebar() {
             </div>
             <div className="flex items-center gap-2">
               <input
-                className="input flex-1 h-8 text-xs"
-                placeholder="New EPIC name…"
+                className={`input flex-1 h-8 text-xs ${epicDupeError ? 'border-rose-500' : ''}`}
+                placeholder={epicDupeError ? 'Name already exists' : 'New EPIC name…'}
                 value={newEpicName}
-                onChange={e => setNewEpicName(e.target.value)}
+                onChange={e => { setNewEpicName(e.target.value); setEpicDupeError(false) }}
                 onKeyDown={e => e.key === 'Enter' && handleAddEpic()}
               />
               <input

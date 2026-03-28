@@ -89,6 +89,7 @@ interface AppStore {
 
   createTag: (data: TagCreate) => Tag
   deleteTag: (id: number) => void
+  updateTag: (id: number, data: Partial<TagCreate>) => void
 }
 
 export const useStore = create<AppStore>()(
@@ -300,6 +301,12 @@ export const useStore = create<AppStore>()(
       // ── Tags ──────────────────────────────────────────────────────────────
 
       createTag: (data) => {
+        const isDupe = get().tags.some(
+          t => t.name.trim().toLowerCase() === data.name.trim().toLowerCase()
+        )
+        if (isDupe) return get().tags.find(
+          t => t.name.trim().toLowerCase() === data.name.trim().toLowerCase()
+        )!
         const tag: Tag = { id: genId(), ...data }
         set(s => ({ tags: [...s.tags, tag] }))
         return tag
@@ -310,6 +317,21 @@ export const useStore = create<AppStore>()(
           tags:    s.tags.filter(t => t.id !== id),
           tickets: s.tickets.map(t => ({ ...t, tags: t.tags.filter(tag => tag.id !== id) })),
           memos:   s.memos.map(m => ({ ...m, tags: m.tags.filter(tag => tag.id !== id) })),
+        }))
+      },
+
+      updateTag: (id, data) => {
+        set(s => ({
+          tags: s.tags.map(t => t.id === id ? { ...t, ...data } : t),
+          // propagate name/color changes into embedded ticket.tags and memo.tags
+          tickets: s.tickets.map(t => ({
+            ...t,
+            tags: t.tags.map(tag => tag.id === id ? { ...tag, ...data } : tag),
+          })),
+          memos: s.memos.map(m => ({
+            ...m,
+            tags: m.tags.map(tag => tag.id === id ? { ...tag, ...data } : tag),
+          })),
         }))
       },
     }),

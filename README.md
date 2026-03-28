@@ -13,12 +13,17 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 ## Features
 
 ### Kanban board
-- **Columns:** Backlog → In Progress → Done
+- **Columns:** Backlog → In Progress → Blocked → Today → Done
 - **Drag & drop** cards between columns (web); **long-press** a card to pick a new status (mobile)
 - **Drag to reorder** within a column — freely within the same priority group; priority order (P1 → P4) is always enforced
 - **Hide Done** toggle to keep the board clean
+- **WIP limits** — per-column limit with a visual warning when exceeded
 - **Filter bar** — filter by Priority, Estimation, EPIC, or Due date (Overdue · This week · This month · No due date)
 - **Search** — keyword search across all columns (title, Why, What, How); press `/` to focus
+- **Weekend mode** — on Saturday and Sunday the Today column is replaced by Saturday and Sunday columns; any tickets left in Today at the start of the weekend automatically move to Backlog; on Monday a triage modal lets you drag unfinished weekend tasks to whichever column they belong in
+- **Keyboard shortcuts** — `N` = new ticket, `M` = new memo, `/` = search (desktop/web); hints shown in the header
+- **Swipe gestures** (mobile) — scroll horizontally between columns, vertically within a column; long-press a card to change its status
+- **Undo last delete** — toast with an Undo button, ~5 s window
 
 ### Tickets
 - **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
@@ -26,7 +31,9 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Due date** — pick a date; card badge turns amber (today), red (overdue), yellow (≤7 days), or shows the date
 - **Description** — Markdown editor with live preview
 - **EPICs** — coloured labels; attach multiple EPICs to a ticket
-- **Routines** — tickets that auto-spawn on a daily/weekly/monthly schedule
+- **Routines** — tickets that auto-spawn on a daily/weekly/monthly/custom schedule; on weekends routine tickets are routed to the Saturday or Sunday column instead of Today
+- **Sub-tasks** — checklist inside a ticket
+- **Due date** — card badge turns amber (today), red (overdue), yellow (≤7 days)
 
 ### EPICs
 - Create and delete EPICs from the **sidebar** or from inside a ticket editor
@@ -38,13 +45,15 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Notifications** — toggle daily reminder on/off; set reminder time (HH:MM)
 - **Settings** — hide/show Done column; dark / light theme toggle (sun / moon)
 - **Appearance** — choose an accent color from 6 presets or a custom color wheel
+- **Export / Import** — export the full board as JSON for manual backup; import from a JSON backup
 
 ### Memos
 - Freeform note pad, separate from the Kanban board
 - Supports EPICs and Markdown
+- **Pin** important memos to the top
 
 ### Notifications
-- Daily reminder at a configurable time
+- Daily reminder at a configurable time — on weekends the notification reflects the Saturday or Sunday column instead of Today
 - Bell icon in the header is synchronised with the sidebar toggle
 
 ---
@@ -249,47 +258,38 @@ ipconfig getifaddr en0   # e.g. 192.168.1.42
 
 ## Todo / Ideas
 
-### Ticket improvements
-- [x] Due dates with overdue highlighting
-- [x] Filter board by due date (Overdue · This week · This month · No due date)
-- [x] Drag to reorder tickets within a column (within the same priority group — priority order is always preserved)
-- [x] Sub-tasks / checklist inside a ticket
-
-### Board improvements
+### Board
 - [ ] Multiple boards (e.g. Work, Personal, Side projects)
 - [ ] Custom columns (rename, add, delete, reorder)
-- [x] WIP limits per column with visual warning when exceeded
 - [ ] Archive column for done tickets instead of deleting
+- [ ] Light/dark mode follows system automatically (currently manual)
+- [ ] Zoom out the phone icon to show the whole cherry
+- [ ] Android back button closes open modal/sidebar instead of quitting the app
 
-### EPICs / tags
+### EPICs
 - [ ] EPIC progress bar showing % of tickets done (opt-in per EPIC at creation time)
-- [x] Filter board by EPIC (show only tickets belonging to one EPIC)
+- [ ] Prevent duplicate EPIC names
+- [ ] Edit EPIC name and color from the sidebar
 
 ### Memos
-- [x] Pin important memos to the top
-- [x] Markdown rendering in memo body
 - [ ] Attach a memo to a specific ticket
-- [ ] put EPIC filters below the search bar
+- [ ] EPIC filters below the search bar
+
+### Routines
+- [ ] Postpone / skip a single routine instance without deleting the routine
+- [ ] Prune done routine instances older than N days (unbounded store growth)
+- [ ] Dynamic countdown badge on routine tickets (X days left before next occurrence) with ability to adjust the due date per instance
 
 ### Notifications
 - [ ] Per-ticket reminders (remind me on due date)
-- [ ] Daily summary notification (X tickets due today)
-- [ ] **FIX notifications on the phone app**
-- [ ] remove notifications button on the sidebar -> only the bell icon in the main board
+- [ ] Remove notifications button from sidebar — bell icon in header only
+- [ ] Notification tap switches to Kanban tab before scrolling to column
+- [ ] Show ticket titles line-by-line in the notification body; make it expandable (Android BigTextStyle / iOS) to reveal the full list
 
 ### Sync / data
-- [x] Export board as JSON (manual backup)
-- [x] Import from JSON backup
 - [ ] Conflict resolution when syncing from multiple devices
 - [ ] iCloud / Google Drive backup (native Capacitor plugin)
-- [ ] add a version picker -> name every change based on the importance (minor change = minor version, major behavior change = major version update)
-
-### UX / polish
-- [x] Keyboard shortcuts — `N` = new ticket, `M` = new memo, `/` = search (desktop/web only; hints shown in header)
-- [x] Swipe gestures on mobile — scroll horizontally between columns, vertically within a column; long-press a card to change its status
-- [ ] Light/dark mode follows system automatically (currently manual)
-- [x] Undo last delete (toast with "Undo" button, ~5 s window)
-- [] zoom out the phone icon to be able to see the whole cherry
+- [ ] Version picker — name every change by importance (minor / major)
 
 ---
 
