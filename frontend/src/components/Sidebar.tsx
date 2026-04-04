@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check, BarChart2 } from 'lucide-react'
+import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check, BarChart2, PlusCircle, Pencil, GripVertical, Filter, AlignLeft, FolderOpen, Repeat2, BarChart } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -284,19 +284,27 @@ export default function Sidebar() {
             open={open.howto}
             onToggle={() => toggle('howto')}
           >
-            <ul className="space-y-2 text-xs text-slate-400 leading-relaxed">
-              <li><span className="text-slate-300 font-medium">Create a ticket</span> — tap <span style={{ color: 'var(--accent)' }}>+</span> in any column header.</li>
-              <li><span className="text-slate-300 font-medium">Edit a ticket</span> — tap anywhere on the card.</li>
-              <li><span className="text-slate-300 font-medium">Move (web)</span> — drag any card to another column.</li>
-              <li><span className="text-slate-300 font-medium">Move (mobile)</span> — long-press a card to pick a new status.</li>
-              <li><span className="text-slate-300 font-medium">Filter</span> — tap <em>Filters</em> above the board to expand; filter by priority, estimate, or EPIC.</li>
-              <li><span className="text-slate-300 font-medium">Description</span> — each ticket has three fields: <em>Why</em> (motivation), <em>What</em> (goal), and <em>How</em> (checklist of steps you can tick off).</li>
-              <li><span className="text-slate-300 font-medium">EPICs</span> — coloured labels attached to tickets. Create or delete them in the EPICs section.</li>
-              <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
-              <li><span className="text-slate-300 font-medium">Estimate</span> — Fibonacci points: 1 · 2 · 3 · 5 · 8.</li>
-              <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
-              <li><span className="text-slate-300 font-medium">Notifications</span> — set your daily reminder time in the Notifications section.</li>
-            </ul>
+            <div className="space-y-1.5">
+              {([
+                [PlusCircle,  'New ticket',      '+ in any column header'],
+                [Pencil,      'Edit',            'Tap anywhere on a card'],
+                [GripVertical,'Move (web)',      'Drag card to another column'],
+                [AlignLeft,   'Move (mobile)',   'Long-press → pick status'],
+                [Filter,      'Filters',         'Priority · Estimate · EPIC · Due'],
+                [AlignLeft,   'Description',     'Why · What · How checklist'],
+                [Tag,         'EPICs',           'Colored labels on tickets'],
+                [Repeat2,     'Routines',        'Auto-spawn on a schedule'],
+                [FolderOpen,  'Projects',        'Set a point goal; link tickets to it'],
+                [BarChart,    'Dashboard',       'Chart icon → Kanban Wrapped'],
+                [Bell,        'Notifications',   'Set reminder time below'],
+              ] as const).map(([Icon, label, desc]) => (
+                <div key={label} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                  <Icon size={13} style={{ color: 'var(--accent)' }} className="shrink-0" />
+                  <span className="text-slate-200 text-xs font-medium w-24 shrink-0">{label}</span>
+                  <span className="text-slate-500 text-xs">{desc}</span>
+                </div>
+              ))}
+            </div>
           </Section>
 
           {/* ── Notifications ────────────────────────────────────────── */}

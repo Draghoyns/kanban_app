@@ -26,20 +26,29 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Undo last delete** — toast with an Undo button, ~5 s window
 
 ### Tickets
-- **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
+- **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a colored badge
 - **Estimation** — Fibonacci points: 1 · 2 · 3 · 5 · 8
 - **Due date** — pick a date; card badge turns amber (today), red (overdue), yellow (≤7 days), or shows the date
 - **Description** — Markdown editor with live preview
-- **EPICs** — coloured labels; attach multiple EPICs to a ticket
+- **EPICs** — colored labels; attach multiple EPICs to a ticket
 - **Routines** — tickets that auto-spawn on a daily/weekly/monthly/custom schedule; on weekends routine tickets are routed to the Saturday or Sunday column instead of Today
 - **Sub-tasks** — checklist inside a ticket
 - **Due date** — card badge turns amber (today), red (overdue), yellow (≤7 days)
+- **Project tickets** — mark a ticket as a project, set a story-point goal, and link atomic tickets to it; the progress bar on the project card fills as linked tickets move to Done
 
 ### EPICs
 - Create and delete EPICs from the **sidebar** or from inside a ticket editor
-- Each EPIC is a coloured badge; deleting an EPIC removes it from all tickets automatically
+- Each EPIC is a colored badge; deleting an EPIC removes it from all tickets automatically
+
+### Dashboard (Kanban Wrapped)
+Tap the chart icon in the top-right corner of the sidebar to open the dashboard. Pick a period — **Today**, **Week**, **Month**, or **Year** — and see:
+- Total story points earned and tickets completed in that period
+- Points breakdown per EPIC (coloured bars, sorted by points)
+- Points breakdown by priority (P1 – P4)
+- List of all done tickets for the period with their point values
 
 ### Sidebar
+- **Kanban Wrapped** — chart icon in the sidebar header opens the dashboard
 - **Sync** — update the app over WiFi without a USB cable (see [WiFi OTA sync](#wifi-ota-sync))
 - **EPICs** — full list with create (`+`) and delete (`×`) actions
 - **Notifications** — toggle daily reminder on/off; set reminder time (HH:MM)
@@ -48,7 +57,7 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Export / Import** — export the full board as JSON for manual backup; import from a JSON backup
 
 ### Memos
-- Freeform note pad, separate from the Kanban board
+- Freeform notepad, separate from the Kanban board
 - Supports EPICs and Markdown
 - **Pin** important memos to the top
 
