@@ -109,7 +109,7 @@ export async function scheduleDailyReminder(hour = 9, minute = 0, tickets: Ticke
         title,
         body,
         largeBody,
-        schedule:  { at, every: 'day', allowWhileIdle: true },
+        schedule:  { at, allowWhileIdle: true },
         smallIcon: 'ic_stat_cherry',
         iconColor: '#6366f1',
         extra:     { column },

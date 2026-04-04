@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
 import { useStore } from '@/store/useStore'
+import { scheduleDailyReminder } from '@/hooks/useLocalNotifications'
 import Header      from '@/components/layout/Header'
 import KanbanBoard from '@/components/KanbanBoard'
 import MemoTab     from '@/components/MemoTab'
@@ -14,6 +15,27 @@ export default function App() {
 
   // Spawn any overdue routine-ticket instances whenever the app opens
   useEffect(() => { generateRoutineTickets() }, [])
+
+  // Re-schedule daily notification whenever app comes to foreground.
+  // This keeps content fresh and reliably re-arms the single-shot alarm
+  // (Android exact repeating alarms are unreliable on API 23+).
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    // Reschedule on mount with current ticket state
+    const { notificationsEnabled, notificationHour, notificationMinute, tickets } = useStore.getState()
+    if (notificationsEnabled) {
+      scheduleDailyReminder(notificationHour, notificationMinute, tickets)
+    }
+    // Reschedule every time the app becomes active again
+    const promise = CapApp.addListener('appStateChange', ({ isActive }) => {
+      if (!isActive) return
+      const { notificationsEnabled, notificationHour, notificationMinute, tickets } = useStore.getState()
+      if (notificationsEnabled) {
+        scheduleDailyReminder(notificationHour, notificationMinute, tickets)
+      }
+    })
+    return () => { promise.then(h => h.remove()).catch(() => {}) }
+  }, [])
 
   // Android back button: use pushState sentinel so Capacitor routes the hardware
   // back button through WebView history (synchronous popstate) instead of the
