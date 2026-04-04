@@ -25,6 +25,9 @@ export interface Ticket {
   start_date:         string | null  // YYYY-MM-DD — anchor for interval counting
   last_generated:     string | null
   parent_id:          number | null
+  is_project:         boolean
+  project_goal:       number | null  // story points needed to complete the project
+  project_id:         number | null  // parent project ticket this ticket contributes to
   created_at:         string
   updated_at:         string
   tags:               Tag[]
@@ -53,6 +56,9 @@ export interface TicketCreate {
   frequency_days?:     string[] | null
   frequency_interval?: number | null
   start_date?:         string | null
+  is_project?:         boolean
+  project_goal?:       number | null
+  project_id?:         number | null
   tag_ids?:            number[]
 }
 
@@ -69,6 +75,9 @@ export interface TicketUpdate {
   frequency_days?:     string[] | null
   frequency_interval?: number | null
   start_date?:         string | null
+  is_project?:         boolean
+  project_goal?:       number | null
+  project_id?:         number | null
   tag_ids?:            number[]
 }
 

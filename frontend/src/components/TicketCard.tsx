@@ -1,9 +1,10 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar } from 'lucide-react'
+import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar, FolderOpen, Layers } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
 import TagBadge from './TagBadge'
+import { useStore } from '@/store/useStore'
 
 interface Props {
   ticket:      Ticket
@@ -117,6 +118,7 @@ function dueDateBadge(dueDate: string): { label: string; cls: string } {
 export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onDelete }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: isSortDragging } =
     useSortable({ id: String(ticket.id) })
+  const { tickets } = useStore()
 
   const style = {
     transform:  CSS.Transform.toString(transform),
@@ -131,6 +133,21 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
 
   const priority   = ticket.priority   ? PRIORITY_LEVELS.find(p  => p.id  === ticket.priority)   : null
   const estimation = ticket.estimation ? ESTIMATION_SIZES.find(e => e.id === ticket.estimation) : null
+
+  // Project progress (only on project tickets with a goal)
+  const projectProgress = ticket.is_project && ticket.project_goal
+    ? (() => {
+        const contributors = tickets.filter(t => t.project_id === ticket.id && t.status === 'done')
+        const earned = contributors.reduce((s, t) => s + (t.estimation ? parseInt(t.estimation, 10) : 0), 0)
+        const pct = Math.min(100, Math.round((earned / ticket.project_goal!) * 100))
+        return { earned, goal: ticket.project_goal!, pct }
+      })()
+    : null
+
+  // Parent project name (for contributing tickets)
+  const parentProject = ticket.project_id != null
+    ? tickets.find(t => t.id === ticket.project_id)
+    : null
 
   return (
       <div
@@ -213,7 +230,28 @@ export default function TicketCard({ ticket, onEdit, isDragging, onMarkDone, onD
             {ticket.tags.map(tag => (
               <TagBadge key={tag.id} tag={tag} small />
             ))}
+            {parentProject && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/40">
+                <FolderOpen size={9} />
+                {parentProject.title}
+              </span>
+            )}
           </div>
+          {/* Project progress bar */}
+          {projectProgress && (
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                <span className="flex items-center gap-1"><Layers size={9} /> Project</span>
+                <span className="font-semibold text-slate-400">{projectProgress.earned} / {projectProgress.goal} pts ({projectProgress.pct}%)</span>
+              </div>
+              <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${projectProgress.pct}%`, backgroundColor: 'var(--accent)' }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
   )
