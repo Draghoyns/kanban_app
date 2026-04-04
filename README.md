@@ -26,11 +26,11 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 - **Undo last delete** — toast with an Undo button, ~5 s window
 
 ### Tickets
-- **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a coloured badge
+- **Priority** — P1 (critical) · P2 · P3 · P4 (low), shown as a colored badge
 - **Estimation** — Fibonacci points: 1 · 2 · 3 · 5 · 8
 - **Due date** — pick a date; card badge turns amber (today), red (overdue), yellow (≤7 days), or shows the date
 - **Description** — Markdown editor with live preview
-- **EPICs** — coloured labels; attach multiple EPICs to a ticket
+- **EPICs** — colored labels; attach multiple EPICs to a ticket
 - **Routines** — tickets that auto-spawn on a daily/weekly/monthly/custom schedule; on weekends routine tickets are routed to the Saturday or Sunday column instead of Today
 - **Sub-tasks** — checklist inside a ticket
 - **Due date** — card badge turns amber (today), red (overdue), yellow (≤7 days)
@@ -38,7 +38,7 @@ A personal Kanban board + memo pad that runs **completely offline** — no inter
 
 ### EPICs
 - Create and delete EPICs from the **sidebar** or from inside a ticket editor
-- Each EPIC is a coloured badge; deleting an EPIC removes it from all tickets automatically
+- Each EPIC is a colored badge; deleting an EPIC removes it from all tickets automatically
 
 ### Dashboard (Kanban Wrapped)
 Tap the chart icon in the top-right corner of the sidebar to open the dashboard. Pick a period — **Today**, **Week**, **Month**, or **Year** — and see:
@@ -57,7 +57,7 @@ Tap the chart icon in the top-right corner of the sidebar to open the dashboard.
 - **Export / Import** — export the full board as JSON for manual backup; import from a JSON backup
 
 ### Memos
-- Freeform note pad, separate from the Kanban board
+- Freeform notepad, separate from the Kanban board
 - Supports EPICs and Markdown
 - **Pin** important memos to the top
 
