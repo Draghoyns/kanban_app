@@ -263,6 +263,9 @@ export const useStore = create<AppStore>()(
           created_at:         now(),
           updated_at:         now(),
           tags:               t.tags,
+          is_project:         false,
+          project_goal:       null,
+          project_id:         null,
         }))
 
         set(s => ({
