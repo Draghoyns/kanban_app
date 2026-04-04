@@ -295,6 +295,8 @@ export default function Sidebar() {
               <li><span className="text-slate-300 font-medium">Priority</span> — P1 (critical) → P4 (low).</li>
               <li><span className="text-slate-300 font-medium">Estimate</span> — Fibonacci points: 1 · 2 · 3 · 5 · 8.</li>
               <li><span className="text-slate-300 font-medium">Routines</span> — tickets that auto-spawn on a schedule.</li>
+              <li><span className="text-slate-300 font-medium">Project tickets</span> — toggle <em>Project ticket</em> in the editor to set a story-point goal; other tickets can link to it and contribute via their estimate. A progress bar appears on the card as linked tickets reach Done.</li>
+              <li><span className="text-slate-300 font-medium">Dashboard</span> — tap the <span style={{ color: 'var(--accent)' }}>chart</span> icon (top-right of this menu) to open <em>Kanban Wrapped</em>. It shows total story points and ticket counts for today / this week / this month / this year, broken down by EPIC and priority.</li>
               <li><span className="text-slate-300 font-medium">Notifications</span> — set your daily reminder time in the Notifications section.</li>
             </ul>
           </Section>
