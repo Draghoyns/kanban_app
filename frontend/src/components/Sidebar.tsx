@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check } from 'lucide-react'
+import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check, BarChart2 } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -62,7 +62,7 @@ function Section({ icon, title, open, onToggle, children }: SectionProps) {
 }
 
 export default function Sidebar() {
-  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, updateTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit } = useStore()
+  const { setSidebarOpen, hideDone, setHideDone, theme, setTheme, accentColor, setAccentColor, notificationHour, notificationMinute, setNotificationHour, setNotificationMinute, tags, createTag, deleteTag, updateTag, backendUrl, setBackendUrl, tickets, memos, wipLimits, setWipLimit, setActiveTab } = useStore()
   const { reschedule } = useLocalNotifications()
   const { status: syncStatus, message: syncMessage, sync, reset: resetSync } = useLiveUpdate()
 
@@ -201,12 +201,21 @@ export default function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
           <span className="font-semibold text-slate-100">Menu</span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false) }}
+              title="Kanban Wrapped"
+              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <BarChart2 size={16} />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
