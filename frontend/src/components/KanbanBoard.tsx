@@ -72,12 +72,13 @@ export default function KanbanBoard() {
   const [showCleanup,  setShowCleanup]    = useState(false)
 
   // Weekend migration: if it's a weekend and there are orphaned 'today' tickets,
-  // move them to backlog so they stay visible and can be re-planned.
+  // move them into the matching weekend column (saturday / sunday) so they stay visible.
   useEffect(() => {
     const dow = new Date().getDay() // 0=Sun, 6=Sat
     if (dow !== 6 && dow !== 0) return
+    const target: TicketStatus = dow === 6 ? 'saturday' : 'sunday'
     const orphans = tickets.filter(t => t.status === 'today')
-    for (const t of orphans) updateTicketStatus(t.id, 'backlog')
+    for (const t of orphans) updateTicketStatus(t.id, target)
   }, []) // run once on mount
 
   // Monday cleanup: if today is Monday and we haven't cleaned up yet, and there
