@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check, BarChart2, PlusCircle, Pencil, GripVertical, Filter, AlignLeft, FolderOpen, Repeat2, BarChart } from 'lucide-react'
+import { X, Bell, EyeOff, Eye, Sun, Moon, Info, BookOpen, Settings, Palette, ChevronDown, Tag, Plus, RefreshCw, AlertCircle, CheckCircle, Download, Upload, Sliders, Loader2, Check, BarChart2, PlusCircle, Pencil, GripVertical, Filter, AlignLeft, FolderKanban, Repeat2, BarChart } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
@@ -294,7 +294,7 @@ export default function Sidebar() {
                 [AlignLeft,   'Description',     'Why · What · How checklist'],
                 [Tag,         'EPICs',           'Colored labels on tickets'],
                 [Repeat2,     'Routines',        'Auto-spawn on a schedule'],
-                [FolderOpen,  'Projects',        'Set a point goal; link tickets to it'],
+                [FolderKanban, 'Projects',        'Set a point goal; link tickets to it'],
                 [BarChart,    'Dashboard',       'Chart icon → Kanban Wrapped'],
                 [Bell,        'Notifications',   'Set reminder time below'],
               ] as const).map(([Icon, label, desc]) => (
