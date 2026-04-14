@@ -11,6 +11,13 @@ interface Props {
   onClose: () => void
 }
 
+function isGrayColor(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return Math.max(r, g, b) - Math.min(r, g, b) < 30
+}
+
 export default function MemoModal({ memo, onClose }: Props) {
   const { tags, createMemo, updateMemo, createTag, theme } = useStore()
 
@@ -38,6 +45,7 @@ export default function MemoModal({ memo, onClose }: Props) {
 
   function handleAddTag() {
     if (!newTagName.trim()) return
+    if (isGrayColor(newTagColor)) { setError('EPIC color cannot be a shade of gray'); return }
     const tag = createTag({ name: newTagName.trim(), color: newTagColor })
     setSelectedTagIds(prev => [...prev, tag.id])
     setNewTagName('')
@@ -116,15 +124,23 @@ export default function MemoModal({ memo, onClose }: Props) {
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1 block">Tags</label>
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {tags.map(tag => (
-                <button
-                  key={tag.id}
-                  onClick={() => toggleTag(tag.id)}
-                  className={`transition-opacity ${selectedTagIds.includes(tag.id) ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
-                >
-                  <TagBadge tag={tag} small />
-                </button>
-              ))}
+              {tags.map(tag => {
+                const selected = selectedTagIds.includes(tag.id)
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => toggleTag(tag.id)}
+                    className="relative inline-flex items-center group"
+                  >
+                    <TagBadge tag={tag} small inactive={!selected} />
+                    {selected && (
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                        ×
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
             <div className="flex items-center gap-2">
               <input

@@ -24,6 +24,13 @@ const FREQ_OPTIONS: { id: FrequencyType; label: string }[] = [
 interface HowSubItem { id: string; text: string; done: boolean }
 interface HowItem    { id: string; text: string; done: boolean; subItems: HowSubItem[] }
 
+function isGrayColor(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return Math.max(r, g, b) - Math.min(r, g, b) < 30
+}
+
 function parseDescription(raw?: string | null): { why: string; what: string; how: HowItem[] } {
   if (!raw) return { why: '', what: '', how: [] }
   try {
@@ -147,6 +154,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
 
   function handleAddTag() {
     if (!newTagName.trim()) return
+    if (isGrayColor(newTagColor)) { setError('EPIC color cannot be a shade of gray'); return }
     const tag = createTag({ name: newTagName.trim(), color: newTagColor })
     setSelectedTagIds(prev => [...prev, tag.id])
     setNewTagName('')
@@ -575,9 +583,9 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
                   <button
                     key={tag.id}
                     onClick={() => toggleTag(tag.id)}
-                    className={`relative inline-flex items-center group transition-opacity ${selected ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                    className="relative inline-flex items-center group"
                   >
-                    <TagBadge tag={tag} small />
+                    <TagBadge tag={tag} small inactive={!selected} />
                     {selected && (
                       <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-900 border border-slate-600 text-slate-300 flex items-center justify-center text-[9px] leading-none opacity-0 group-hover:opacity-100 transition-opacity">
                         ×
