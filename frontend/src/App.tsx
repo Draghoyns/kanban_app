@@ -8,6 +8,7 @@ import KanbanBoard from '@/components/KanbanBoard'
 import MemoTab     from '@/components/MemoTab'
 import RoutineTab  from '@/components/RoutineTab'
 import DashboardPage from '@/components/DashboardPage'
+import ProjectTab  from '@/components/ProjectTab'
 import Sidebar     from '@/components/Sidebar'
 
 export default function App() {
@@ -129,7 +130,7 @@ export default function App() {
     <div className="flex flex-col h-full">
       <Header />
       <main className="flex-1 overflow-hidden flex flex-col">
-        {activeTab === 'kanban' ? <KanbanBoard /> : activeTab === 'memo' ? <MemoTab /> : activeTab === 'routine' ? <RoutineTab /> : <DashboardPage />}
+        {activeTab === 'kanban' ? <KanbanBoard /> : activeTab === 'memo' ? <MemoTab /> : activeTab === 'routine' ? <RoutineTab /> : activeTab === 'project' ? <ProjectTab /> : <DashboardPage />}
       </main>
       {sidebarOpen && <Sidebar />}
     </div>
