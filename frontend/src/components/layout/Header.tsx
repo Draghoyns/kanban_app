@@ -1,10 +1,11 @@
 import { useStore } from '@/store/useStore'
 import { useLocalNotifications } from '@/hooks/useLocalNotifications'
-import { LayoutDashboard, StickyNote, Repeat, Bell, BellOff } from 'lucide-react'
+import { LayoutDashboard, StickyNote, Repeat, Bell, BellOff, FolderKanban } from 'lucide-react'
 
 const tabs = [
-  { id: 'kanban' as const, label: 'Kanban', icon: LayoutDashboard },
-  { id: 'memo'   as const, label: 'Memos',  icon: StickyNote       },
+  { id: 'kanban'  as const, label: 'Kanban',   icon: LayoutDashboard },
+  { id: 'project' as const, label: 'Projects', icon: FolderKanban    },
+  { id: 'memo'    as const, label: 'Memos',    icon: StickyNote      },
 ]
 
 export default function Header() {
