@@ -47,7 +47,7 @@ interface AppStore {
   tickets:     Ticket[]
   memos:       Memo[]
   tags:        Tag[]
-  activeTab:        'kanban' | 'memo' | 'routine' | 'dashboard'
+  activeTab:        'kanban' | 'memo' | 'routine' | 'dashboard' | 'project'
   hideDone:         boolean
   theme:            'dark' | 'light'
   accentColor:      string
@@ -62,7 +62,7 @@ interface AppStore {
   wipLimits:            Partial<Record<TicketStatus, number>>
   weekendCleanupDate:   string | null  // YYYY-MM-DD of last Monday where cleanup ran
 
-  setActiveTab:           (tab: 'kanban' | 'memo' | 'routine' | 'dashboard') => void
+  setActiveTab:           (tab: 'kanban' | 'memo' | 'routine' | 'dashboard' | 'project') => void
   setHideDone:            (v: boolean) => void
   setTheme:               (theme: 'dark' | 'light') => void
   setAccentColor:         (color: string) => void
