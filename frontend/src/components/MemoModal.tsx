@@ -11,6 +11,13 @@ interface Props {
   onClose: () => void
 }
 
+function isGrayColor(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return Math.max(r, g, b) - Math.min(r, g, b) < 30
+}
+
 export default function MemoModal({ memo, onClose }: Props) {
   const { tags, createMemo, updateMemo, createTag, theme } = useStore()
 
@@ -38,6 +45,7 @@ export default function MemoModal({ memo, onClose }: Props) {
 
   function handleAddTag() {
     if (!newTagName.trim()) return
+    if (isGrayColor(newTagColor)) { setError('EPIC color cannot be a shade of gray'); return }
     const tag = createTag({ name: newTagName.trim(), color: newTagColor })
     setSelectedTagIds(prev => [...prev, tag.id])
     setNewTagName('')

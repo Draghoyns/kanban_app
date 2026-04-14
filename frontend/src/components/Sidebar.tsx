@@ -8,6 +8,13 @@ import TagBadge from '@/components/TagBadge'
 import type { Ticket, Memo, Tag as TagType } from '@/types'
 import { STATUSES } from '@/types'
 
+function isGrayColor(hex: string): boolean {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return Math.max(r, g, b) - Math.min(r, g, b) < 30
+}
+
 const PALETTE_PRESETS = [
   { name: 'Pink',    color: '#ec4899' },
   { name: 'Rose',    color: '#f43f5e' },
@@ -154,6 +161,7 @@ export default function Sidebar() {
     if (!name) return
     const isDupe = tags.some(t => t.name.trim().toLowerCase() === name.toLowerCase())
     if (isDupe) { setEpicDupeError('An EPIC with this name already exists'); return }
+    if (isGrayColor(newEpicColor)) { setEpicDupeError('EPIC color cannot be a shade of gray'); return }
     createTag({ name, color: newEpicColor })
     setNewEpicName('')
   }
