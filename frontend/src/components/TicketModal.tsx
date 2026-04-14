@@ -451,30 +451,35 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
 
           {/* ── Project section ─────────────────────────────────────── */}
           <div className="rounded-xl border border-slate-700 p-3 space-y-3">
-            <button
-              onClick={() => { setIsProject(v => { if (!v) setIsRoutine(false); return !v }) }}
-              className="flex items-center gap-2 w-full"
-            >
-              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors shrink-0
-                ${isProject ? 'bg-sky-500 border-sky-500' : 'border-slate-600'}`}>
-                {isProject && <span className="text-white text-[10px] leading-none font-bold">✓</span>}
-              </div>
-              <FolderOpen size={13} className={isProject ? 'text-sky-400' : 'text-slate-500'} />
-              <span className="text-xs font-medium text-slate-300">Project ticket</span>
-            </button>
+            {/* Toggle only shown when editing/creating a project ticket */}
+            {(isProject || initialIsProject) && (
+              <>
+                <button
+                  onClick={() => { setIsProject(v => { if (!v) setIsRoutine(false); return !v }) }}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors shrink-0
+                    ${isProject ? 'bg-sky-500 border-sky-500' : 'border-slate-600'}`}>
+                    {isProject && <span className="text-white text-[10px] leading-none font-bold">✓</span>}
+                  </div>
+                  <FolderOpen size={13} className={isProject ? 'text-sky-400' : 'text-slate-500'} />
+                  <span className="text-xs font-medium text-slate-300">Project ticket</span>
+                </button>
 
-            {isProject && (
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="shrink-0">Goal (story points)</span>
-                <input
-                  type="number"
-                  min={1}
-                  className="input w-20 text-center py-1"
-                  placeholder="e.g. 13"
-                  value={projectGoal}
-                  onChange={e => setProjectGoal(e.target.value)}
-                />
-              </div>
+                {isProject && (
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <span className="shrink-0">Goal (story points)</span>
+                    <input
+                      type="number"
+                      min={1}
+                      className="input w-20 text-center py-1"
+                      placeholder="e.g. 13"
+                      value={projectGoal}
+                      onChange={e => setProjectGoal(e.target.value)}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             {!isProject && !isRoutine && (
