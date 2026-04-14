@@ -242,7 +242,8 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
             </div>
           </div>
 
-          {/* Estimation */}
+          {/* Estimation — hidden for project tickets (points tracked via goal) */}
+          {!isProject && (
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1.5 block">Estimation</label>
             <div className="flex items-center gap-2 flex-wrap">
@@ -266,6 +267,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
               )}
             </div>
           </div>
+          )}
 
           {/* Due date / Start date */}
           <div>
