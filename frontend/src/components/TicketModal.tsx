@@ -10,6 +10,7 @@ interface Props {
   ticket?:          Ticket
   initialStatus?:   TicketStatus
   initialIsRoutine?: boolean
+  initialIsProject?: boolean
   onClose:          () => void
 }
 
@@ -37,7 +38,7 @@ function parseDescription(raw?: string | null): { why: string; what: string; how
   return { why: raw, what: '', how: [] }
 }
 
-export default function TicketModal({ ticket, initialStatus = 'backlog', initialIsRoutine = false, onClose }: Props) {
+export default function TicketModal({ ticket, initialStatus = 'backlog', initialIsRoutine = false, initialIsProject = false, onClose }: Props) {
   const { tags, tickets, createTicket, updateTicket, createTag } = useStore()
 
   const parsed = parseDescription(ticket?.description)
@@ -65,7 +66,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
   const [isRoutine,      setIsRoutine]      = useState(ticket?.is_routine         ?? initialIsRoutine)
 
   // Project state
-  const [isProject,   setIsProject]   = useState(ticket?.is_project   ?? false)
+  const [isProject,   setIsProject]   = useState(ticket?.is_project   ?? initialIsProject)
   const [projectGoal, setProjectGoal] = useState<string>(String(ticket?.project_goal ?? ''))
   const [projectId,   setProjectId]   = useState<number | null>(ticket?.project_id ?? null)
   const [frequencyType,  setFrequencyType]  = useState<FrequencyType>(ticket?.frequency_type ?? 'daily')
