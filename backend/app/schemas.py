@@ -8,7 +8,10 @@ class TicketStatus(str, Enum):
     backlog = "backlog"
     in_progress = "in_progress"
     blocked = "blocked"
+    validation = "validation"
     today = "today"
+    saturday = "saturday"
+    sunday = "sunday"
     done = "done"
 
 
