@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, RefreshCw, FolderOpen } from 'lucide-react'
+import { X, Plus, RefreshCw, Swords } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import type { Ticket, TicketStatus, FrequencyType, PriorityLevel, EstimationSize } from '@/types'
 import { STATUSES, WEEKDAYS, PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
@@ -470,8 +470,8 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
                     ${isProject ? 'bg-sky-500 border-sky-500' : 'border-slate-600'}`}>
                     {isProject && <span className="text-white text-[10px] leading-none font-bold">✓</span>}
                   </div>
-                  <FolderOpen size={13} className={isProject ? 'text-sky-400' : 'text-slate-500'} />
-                  <span className="text-xs font-medium text-slate-300">Project ticket</span>
+                  <Swords size={13} className={isProject ? 'text-sky-400' : 'text-slate-500'} />
+                  <span className="text-xs font-medium text-slate-300">Skill ticket</span>
                 </button>
 
                 {isProject && (
@@ -492,7 +492,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
 
             {!isProject && !isRoutine && (
               <div className="space-y-1">
-                <label className="text-xs text-slate-500">Link to project (optional)</label>
+                <label className="text-xs text-slate-500">Link to skill (optional)</label>
                 <select
                   className="input w-full text-sm py-1"
                   value={projectId ?? ''}
