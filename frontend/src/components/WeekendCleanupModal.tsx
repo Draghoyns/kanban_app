@@ -18,6 +18,7 @@ const TARGETS: { id: TicketStatus; label: string; color: string; border: string 
   { id: 'today',       label: 'Today',       color: 'text-amber-400',  border: 'border-amber-500'  },
   { id: 'in_progress', label: 'In Progress', color: 'text-blue-400',   border: 'border-blue-500'   },
   { id: 'blocked',     label: 'Blocked',     color: 'text-rose-400',   border: 'border-rose-500'   },
+  { id: 'validation',  label: 'Validation',  color: 'text-teal-400',   border: 'border-teal-500'   },
 ]
 
 // ── Draggable ticket row ─────────────────────────────────────────────────────
