@@ -240,7 +240,12 @@ Once the app is installed on your phone, you can push updates **wirelessly** wit
 2. The backend (`./start.sh`) serves two new endpoints:
    - `GET /sync/version` — returns the current build's `bundleId`
    - `GET /sync/bundle.zip` — streams the full `dist/` directory as a zip
-3. On the phone, open the **sidebar → Sync**, enter your Mac's local IP (e.g. `http://192.168.1.x:8000`), and tap **Sync now**.
+3. On the phone, open the **sidebar → Sync**, enter your Mac's local IP and tap **Sync now**.
+If you're not sure about the IP address to use, check with this command:
+```bash
+ifconfig | grep "inet " | grep -v 127.0.0.1 | cut -d\  -f2
+
+```
 4. The app checks the version, downloads the zip if it differs, applies it, and reloads automatically.
 5. The new bundle is stored on-device — the app keeps working fully **offline** after syncing.
 
