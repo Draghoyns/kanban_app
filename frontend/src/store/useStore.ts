@@ -5,21 +5,30 @@ import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoC
 const genId = () => Date.now() + Math.floor(Math.random() * 1000)
 const now   = () => new Date().toISOString()
 
+/** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs). */
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/** Format a Date as a local YYYY-MM-DD string. */
+function toLocalDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 // Returns true if a routine ticket template should spawn a new instance today
 function isDue(t: Ticket, today: Date): boolean {
   if (!t.is_routine) return false
 
   // Don't generate before start_date
   if (t.start_date) {
-    const start = new Date(t.start_date)
-    start.setHours(0, 0, 0, 0)
+    const start = parseLocalDate(t.start_date)
     if (today < start) return false
   }
 
   if (!t.last_generated) return true
 
-  const last = new Date(t.last_generated)
-  last.setHours(0, 0, 0, 0)
+  const last = parseLocalDate(t.last_generated)
   if (last >= today) return false // already generated today
 
   switch (t.frequency_type) {
@@ -32,8 +41,7 @@ function isDue(t: Ticket, today: Date): boolean {
     case 'interval': {
       let ref = last
       if (t.start_date) {
-        const start = new Date(t.start_date)
-        start.setHours(0, 0, 0, 0)
+        const start = parseLocalDate(t.start_date)
         if (start > last) ref = start // start_date newer than last_generated → cycle was reset
       }
       const days = Math.floor((today.getTime() - ref.getTime()) / 86_400_000)
@@ -169,6 +177,11 @@ export const useStore = create<AppStore>()(
             const tags = data.tag_ids != null
               ? s.tags.filter(tag => data.tag_ids!.includes(tag.id))
               : t.tags
+            // Changing start_date on a routine template resets the cycle:
+            // clear last_generated so the next run uses the new anchor date.
+            const cycleReset = t.is_routine && data.start_date !== undefined && data.start_date !== t.start_date
+              ? { last_generated: null }
+              : {}
             return {
               ...t,
               ...(data.title              != null    ? { title: data.title }                           : {}),
@@ -186,6 +199,7 @@ export const useStore = create<AppStore>()(
               ...(data.is_project         !== undefined ? { is_project:   data.is_project }   : {}),
               ...(data.project_goal       !== undefined ? { project_goal: data.project_goal } : {}),
               ...(data.project_id         !== undefined ? { project_id:   data.project_id }   : {}),
+              ...cycleReset,
               tags,
               updated_at: now(),
             }
@@ -221,12 +235,26 @@ export const useStore = create<AppStore>()(
       generateRoutineTickets: () => {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        const todayStr = today.toISOString()
+        const todayStr = toLocalDateStr(today) // local YYYY-MM-DD, timezone-safe
         const dow = today.getDay() // 0=Sun, 6=Sat
         const targetStatus: TicketStatus =
           dow === 6 ? 'saturday' : dow === 0 ? 'sunday' : 'today'
 
         const { tickets } = get()
+
+        // On weekends, migrate any leftover 'today' tickets so they stay visible
+        if (dow === 6 || dow === 0) {
+          const orphans = tickets.filter(t => t.status === 'today' && !t.is_routine)
+          if (orphans.length > 0) {
+            set(s => ({
+              tickets: s.tickets.map(t =>
+                t.status === 'today' && !t.is_routine
+                  ? { ...t, status: targetStatus, updated_at: now() }
+                  : t
+              ),
+            }))
+          }
+        }
 
         // Prune done routine instances older than 30 days
         const cutoff = new Date(today)
@@ -239,7 +267,16 @@ export const useStore = create<AppStore>()(
         )
 
         const dueTo = tickets.filter(t => isDue(t, today))
-        if (dueTo.length === 0) {
+
+        // Auto-move tickets due today to the active day column
+        const dueTodayTickets = tickets.filter(t =>
+          t.due_date === todayStr &&
+          !t.is_routine &&
+          !t.is_project &&
+          !['today', 'saturday', 'sunday', 'done'].includes(t.status)
+        )
+
+        if (dueTo.length === 0 && dueTodayTickets.length === 0) {
           if (pruned.size > 0) set(s => ({ tickets: s.tickets.filter(t => !pruned.has(t.id)) }))
           return []
         }
@@ -268,12 +305,18 @@ export const useStore = create<AppStore>()(
           project_id:         null,
         }))
 
+        const dueTodayIds = new Set(dueTodayTickets.map(t => t.id))
+
         set(s => ({
           tickets: [
-            // Stamp last_generated on each template, remove pruned done instances
             ...s.tickets
               .filter(t => !pruned.has(t.id))
-              .map(t => dueTo.find(d => d.id === t.id) ? { ...t, last_generated: todayStr } : t),
+              .map(t => {
+                if (dueTo.find(d => d.id === t.id)) return { ...t, last_generated: todayStr }
+                // Move due-today tickets to today/saturday/sunday
+                if (dueTodayIds.has(t.id)) return { ...t, status: targetStatus, updated_at: now() }
+                return t
+              }),
             ...instances,
           ],
         }))
