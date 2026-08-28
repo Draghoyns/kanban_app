@@ -19,8 +19,7 @@ function descPreview(raw: string): string {
   try {
     const p = JSON.parse(raw)
     if (p && typeof p === 'object' && 'why' in p) {
-      const parts = [p.why, p.what].filter(Boolean)
-      return parts.join(' · ').trim()
+      return (p.why ?? '').trim()
     }
   } catch {}
   // Legacy markdown: strip syntax
@@ -32,6 +31,12 @@ function descPreview(raw: string): string {
     .replace(/^\s*[-*+]\s+/gm, '')
     .replace(/\n+/g, ' ')
     .trim()
+}
+
+/** Parse a YYYY-MM-DD string as local midnight to avoid UTC offset issues. */
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
 }
 
 /** Compute days until next routine occurrence for a routine template ticket */
@@ -48,8 +53,7 @@ export function routineCountdown(ticket: Ticket): { label: string; cls: string }
     return { label: 'due now', cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
   }
 
-  const last = new Date(ticket.last_generated)
-  last.setHours(0, 0, 0, 0)
+  const last = parseLocalDate(ticket.last_generated)
 
   switch (ticket.frequency_type) {
     case 'daily': {
@@ -79,8 +83,7 @@ export function routineCountdown(ticket: Ticket): { label: string; cls: string }
       const interval = ticket.frequency_interval ?? 1
       let ref = last
       if (ticket.start_date) {
-        const start = new Date(ticket.start_date)
-        start.setHours(0, 0, 0, 0)
+        const start = parseLocalDate(ticket.start_date)
         if (start > last) ref = start
       }
       next = new Date(ref)
