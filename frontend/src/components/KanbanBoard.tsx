@@ -6,6 +6,7 @@ import {
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { createPortal } from 'react-dom'
 import { Plus } from 'lucide-react'
+import { Capacitor } from '@capacitor/core'
 
 import { useStore } from '@/store/useStore'
 import { STATUSES, type Ticket, type TicketStatus } from '@/types'
@@ -14,6 +15,7 @@ import TicketCard          from './TicketCard'
 import TicketModal         from './TicketModal'
 import FilterBar, { type ActiveFilters } from './FilterBar'
 import WeekendCleanupModal from './WeekendCleanupModal'
+import { scheduleDailyReminder } from '@/hooks/useLocalNotifications'
 
 // Returns the day-appropriate visible statuses:
 // on weekends replace Today with Saturday + Sunday; on weekdays keep Today.
@@ -173,6 +175,11 @@ export default function KanbanBoard() {
   function handleMarkDone(ticket: Ticket) {
     const prevStatus = ticket.status
     updateTicketStatus(ticket.id, 'done')
+    // Reschedule notification so it reflects the updated Today column immediately
+    if (Capacitor.isNativePlatform()) {
+      const { notificationsEnabled, notificationHour, notificationMinute, tickets: latest } = useStore.getState()
+      if (notificationsEnabled) scheduleDailyReminder(notificationHour, notificationMinute, latest)
+    }
     // Cancel any pending delete (one toast at a time)
     if (deleteTicketPending) {
       clearTimeout(deleteTimer.current)
@@ -284,7 +291,12 @@ export default function KanbanBoard() {
       if (!original) return
 
       if (original.status !== final.status) {
-        updateTicketStatus(movedId, final.status)
+        if (final.status === 'done') {
+          // Route through handleMarkDone so the undo toast fires
+          handleMarkDone(original)
+        } else {
+          updateTicketStatus(movedId, final.status)
+        }
       } else {
         const columnIds = localTickets
           .filter(t => t.status === final.status && t.priority === final.priority)
