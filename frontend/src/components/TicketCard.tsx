@@ -33,10 +33,17 @@ function descPreview(raw: string): string {
     .trim()
 }
 
-/** Parse a YYYY-MM-DD string as local midnight to avoid UTC offset issues. */
+/** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs).
+ * Falls back to setHours for legacy ISO strings still in localStorage. */
 function parseLocalDate(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, m - 1, d)
+  if (s.length === 10) {
+    const [y, m, d] = s.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  // Legacy ISO datetime stored before this fix
+  const dt = new Date(s)
+  dt.setHours(0, 0, 0, 0)
+  return dt
 }
 
 /** Compute days until next routine occurrence for a routine template ticket */

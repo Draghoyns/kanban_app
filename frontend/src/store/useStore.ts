@@ -5,10 +5,17 @@ import type { Ticket, Memo, Tag, TicketCreate, TicketUpdate, TicketStatus, MemoC
 const genId = () => Date.now() + Math.floor(Math.random() * 1000)
 const now   = () => new Date().toISOString()
 
-/** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs). */
+/** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs).
+ * Falls back to setHours for legacy ISO strings still in localStorage. */
 function parseLocalDate(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, m - 1, d)
+  if (s.length === 10) {
+    const [y, m, d] = s.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  // Legacy ISO datetime stored before this fix
+  const dt = new Date(s)
+  dt.setHours(0, 0, 0, 0)
+  return dt
 }
 
 /** Format a Date as a local YYYY-MM-DD string. */
