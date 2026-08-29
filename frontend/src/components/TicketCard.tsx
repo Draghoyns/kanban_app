@@ -3,10 +3,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar, FolderOpen, Layers } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
-import { useStore } from '@/store/useStore'
-import { isDue, parseLocalDate as _parseLocalDate, toLocalDateStr } from '@/store/useStore'
+import { useStore, isDue, parseLocalDate, toLocalDateStr } from '@/store/useStore'
 import TagBadge from './TagBadge'
-import { useStore } from '@/store/useStore'
 
 interface Props {
   ticket:      Ticket
@@ -33,12 +31,6 @@ function descPreview(raw: string): string {
     .replace(/^\s*[-*+]\s+/gm, '')
     .replace(/\n+/g, ' ')
     .trim()
-}
-
-/** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs).
- * Falls back to setHours for legacy ISO strings still in localStorage. */
-function parseLocalDate(s: string): Date {
-  return _parseLocalDate(s)
 }
 
 /** Compute days until next routine occurrence for a routine template ticket.
