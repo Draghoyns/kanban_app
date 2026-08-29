@@ -62,6 +62,10 @@ export function routineCountdown(ticket: Ticket): { label: string; cls: string }
 
   const last = parseLocalDate(ticket.last_generated)
 
+  if (last >= today) {
+    return { label: 'done today', cls: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/40' }
+  }
+
   switch (ticket.frequency_type) {
     case 'daily': {
       next = new Date(last)
