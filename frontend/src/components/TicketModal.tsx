@@ -31,18 +31,18 @@ function isGrayColor(hex: string): boolean {
   return Math.max(r, g, b) - Math.min(r, g, b) < 30
 }
 
-function parseDescription(raw?: string | null): { why: string; what: string; how: HowItem[] } {
-  if (!raw) return { why: '', what: '', how: [] }
+function parseDescription(raw?: string | null): { why: string; what: string; how: HowItem[]; dod: string } {
+  if (!raw) return { why: '', what: '', how: [], dod: '' }
   try {
     const p = JSON.parse(raw)
     if (p && typeof p === 'object' && 'why' in p) {
       const how: HowItem[] = Array.isArray(p.how)
         ? p.how.map((item: HowItem) => ({ ...item, subItems: item.subItems ?? [] }))
         : []
-      return { why: p.why ?? '', what: p.what ?? '', how }
+      return { why: p.why ?? '', what: p.what ?? '', how, dod: p.dod ?? '' }
     }
   } catch {}
-  return { why: raw, what: '', how: [] }
+  return { why: raw, what: '', how: [], dod: '' }
 }
 
 export default function TicketModal({ ticket, initialStatus = 'backlog', initialIsRoutine = false, initialIsProject = false, onClose }: Props) {
@@ -53,6 +53,7 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
   const [title,          setTitle]          = useState(ticket?.title           ?? '')
   const [why,            setWhy]            = useState(parsed.why)
   const [what,           setWhat]           = useState(parsed.what)
+  const [dod,            setDod]            = useState(parsed.dod)
   const [howItems,       setHowItems]       = useState<HowItem[]>(parsed.how)
   const [howInput,       setHowInput]       = useState('')
   const [subInputId,     setSubInputId]     = useState<string | null>(null)
@@ -179,8 +180,8 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
           start_date:         null  as null,
         }
 
-    const descPayload = { why: why.trim(), what: what.trim(), how: howItems }
-    const hasDesc = descPayload.why || descPayload.what || descPayload.how.length > 0
+    const descPayload = { why: why.trim(), what: what.trim(), how: howItems, dod: dod.trim() }
+    const hasDesc = descPayload.why || descPayload.what || descPayload.how.length > 0 || descPayload.dod
 
     const payload = {
       title:        title.trim(),
@@ -331,6 +332,15 @@ export default function TicketModal({ ticket, initialStatus = 'backlog', initial
             onChange={setWhat}
             rows={2}
             placeholder="What needs to be done?"
+          />
+
+          {/* Definition of Done */}
+          <MarkdownField
+            label="Definition of Done"
+            value={dod}
+            onChange={setDod}
+            rows={2}
+            placeholder="What does 'done' look like for this ticket?"
           />
 
           {/* How */}

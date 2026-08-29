@@ -3,13 +3,14 @@ import { BarChart2, Zap, CheckCheck, Hash } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { PRIORITY_LEVELS } from '@/types'
 
-type Period = 'day' | 'week' | 'month' | 'year'
+type Period = 'day' | 'week' | 'month' | 'last_month' | 'year'
 
 const PERIODS: { id: Period; label: string }[] = [
-  { id: 'day',   label: 'Today'     },
-  { id: 'week',  label: 'This week' },
-  { id: 'month', label: 'This month'},
-  { id: 'year',  label: 'This year' },
+  { id: 'day',        label: 'Today'      },
+  { id: 'week',       label: 'This week'  },
+  { id: 'month',      label: 'This month' },
+  { id: 'last_month', label: 'Last month' },
+  { id: 'year',       label: 'This year'  },
 ]
 
 function inPeriod(dateStr: string, period: Period): boolean {
@@ -31,6 +32,11 @@ function inPeriod(dateStr: string, period: Period): boolean {
     case 'month':
       return d.getFullYear() === now.getFullYear() &&
              d.getMonth()    === now.getMonth()
+    case 'last_month': {
+      const lm = now.getMonth() - 1
+      const ly = lm < 0 ? now.getFullYear() - 1 : now.getFullYear()
+      return d.getFullYear() === ly && d.getMonth() === (lm < 0 ? 11 : lm)
+    }
     case 'year':
       return d.getFullYear() === now.getFullYear()
   }
