@@ -58,6 +58,8 @@ function isDue(t: Ticket, today: Date): boolean {
   }
 }
 
+export { isDue, parseLocalDate, toLocalDateStr }
+
 interface AppStore {
   tickets:     Ticket[]
   memos:       Memo[]

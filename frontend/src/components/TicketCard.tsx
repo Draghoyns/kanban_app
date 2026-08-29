@@ -3,6 +3,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { Trash2, RefreshCw, GitBranch, CheckCheck, Calendar, FolderOpen, Layers } from 'lucide-react'
 import type { Ticket } from '@/types'
 import { PRIORITY_LEVELS, ESTIMATION_SIZES } from '@/types'
+import { useStore } from '@/store/useStore'
+import { isDue, parseLocalDate as _parseLocalDate, toLocalDateStr } from '@/store/useStore'
 import TagBadge from './TagBadge'
 import { useStore } from '@/store/useStore'
 
@@ -36,35 +38,46 @@ function descPreview(raw: string): string {
 /** Parse a YYYY-MM-DD string as local midnight (avoids UTC offset bugs).
  * Falls back to setHours for legacy ISO strings still in localStorage. */
 function parseLocalDate(s: string): Date {
-  if (s.length === 10) {
-    const [y, m, d] = s.split('-').map(Number)
-    return new Date(y, m - 1, d)
-  }
-  // Legacy ISO datetime stored before this fix
-  const dt = new Date(s)
-  dt.setHours(0, 0, 0, 0)
-  return dt
+  return _parseLocalDate(s)
 }
 
-/** Compute days until next routine occurrence for a routine template ticket */
+/** Compute days until next routine occurrence for a routine template ticket.
+ * Wired to the same isDue() generation mechanism so display and spawning are always coherent. */
 export function routineCountdown(ticket: Ticket): { label: string; cls: string } | null {
   if (!ticket.is_routine) return null
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const todayStr = toLocalDateStr(today)
 
-  // Determine next due date
-  let next: Date | null = null
+  // Check if an instance was actually generated today (source of truth: the generated tickets)
+  const { tickets: allTickets } = useStore.getState()
+  const todayInstance = allTickets.find(t => t.parent_id === ticket.id && t.created_at.startsWith(todayStr))
+  if (todayInstance) {
+    const label = todayInstance.status === 'done' ? 'done today' : 'due today'
+    return { label, cls: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/40' }
+  }
 
-  if (!ticket.last_generated) {
-    // Never generated — due now
+  // Mirror generation: if isDue returns true, an instance will be spawned on the next run
+  if (isDue(ticket, today)) {
     return { label: 'due now', cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
   }
 
-  const last = parseLocalDate(ticket.last_generated)
+  // Not due today — compute next due date using the same reference logic as isDue
+  const last = ticket.last_generated ? parseLocalDate(ticket.last_generated) : null
 
-  if (last >= today) {
-    return { label: 'done today', cls: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/40' }
+  // If never generated, next due is start_date (isDue would have returned true otherwise)
+  if (!last) {
+    if (ticket.start_date) {
+      const start = parseLocalDate(ticket.start_date)
+      const diff = Math.round((start.getTime() - today.getTime()) / 86_400_000)
+      if (diff <= 0) return { label: 'due now', cls: 'bg-amber-500/15 text-amber-500 border-amber-500/40' }
+      if (diff === 1) return { label: 'in 1d', cls: 'bg-yellow-500/15 text-yellow-600 border-yellow-500/40' }
+      return { label: `in ${diff}d`, cls: 'bg-slate-500/15 text-slate-400 border-slate-500/40' }
+    }
+    return null
   }
+
+  let next: Date | null = null
 
   switch (ticket.frequency_type) {
     case 'daily': {
